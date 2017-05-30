@@ -1,0 +1,42 @@
+{
+  "name": "zipkin-javascript-opentracing",
+  "version": "0.0.1",
+  "description": "An opentracing implementation for zipkin",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "statements": 100,
+        "branches": 100,
+        "functions": 100,
+        "lines": 100
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/costacruise/zipkin-javascript-opentracing.git"
+  },
+  "keywords": [
+    "zipkin",
+    "opentracing",
+    "tracing",
+    "tracking",
+    "performance",
+    "benchmarking"
+  ],
+  "author": "Daniel Schmidt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/costacruise/zipkin-javascript-opentracing/issues"
+  },
+  "homepage": "https://github.com/costacruise/zipkin-javascript-opentracing#readme",
+  "devDependencies": {
+    "jest": "^20.0.4",
+    "opentracing": "^0.14.1"
+  }
+}
