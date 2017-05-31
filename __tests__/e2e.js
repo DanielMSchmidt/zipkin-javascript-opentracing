@@ -46,6 +46,7 @@ describe('mock', () => {
             tracer.scoped(() => {
                 tracer.setId(tracer.createRootId());
                 tracer.recordServiceName('My Service');
+                tracer.recordBinary('spanName', 'My Span');
                 tracer.recordAnnotation(new Annotation.ServerSend());
             });
 
@@ -77,7 +78,59 @@ describe('mock', () => {
             expect(json[0].annotations[0].endpoint.serviceName).toBe(
                 'My Service'
             );
-            expect(json[0].binaryAnnotations.length).toBe(0);
+            expect(json[0].binaryAnnotations.length).toBe(1);
+            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
+        });
+    });
+
+    describe('zipkin-javascript-opentracing', () => {
+        it('should record a simple request', () => {
+            mockFetch.mockReset();
+            const opentracing = require('opentracing');
+            const ZipkinJavascriptOpentracing = require('../index');
+            const tracer = new ZipkinJavascriptOpentracing({
+                serviceName: 'My Service',
+                recorder: new BatchRecorder({
+                    logger: new HttpLogger({
+                        endpoint: 'http://localhost:9411/api/v1/spans',
+                    }),
+                }),
+            });
+
+            const span = tracer.startSpan('My Span');
+            span.finish();
+
+            jest.runOnlyPendingTimers();
+
+            expect(mockFetch).toHaveBeenCalled();
+            const [
+                endpoint,
+                { method, body, headers },
+            ] = mockFetch.mock.calls[0];
+
+            expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+            expect(method).toBe('POST');
+            expect(Object.keys(headers)).toEqual(
+                expect.arrayContaining(['Accept', 'Content-Type'])
+            );
+            const json = JSON.parse(body);
+            expect(json.length).toBe(1);
+            expect(Object.keys(json[0])).toEqual([
+                'traceId',
+                'name',
+                'id',
+                'annotations',
+                'binaryAnnotations',
+                'timestamp',
+                'duration',
+            ]);
+            expect(json[0].annotations.length).toBe(1);
+            expect(json[0].annotations[0].endpoint.serviceName).toBe(
+                'My Service'
+            );
+
+            expect(json[0].binaryAnnotations.length).toBe(1);
+            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
         });
     });
 });
