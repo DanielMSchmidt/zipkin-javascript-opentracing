@@ -30,8 +30,15 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
     const span = tracer.startSpan('My Span');
 
     setTimeout(() => {
-        span.finish();
+        span.log({
+            statusCode: '200',
+            objectId: '42',
+        });
     }, 100);
+
+    setTimeout(() => {
+        span.finish();
+    }, 200);
 
     next();
 });
