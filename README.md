@@ -11,3 +11,8 @@ Please see the examples in the `examples/` directory.
 ### injecting and ejecting
 
 We currently only support HTTP Headers. If you need your own mechanism, feel free to do a PR.
+
+
+### Flags
+
+They are currently not supported, feel free to do a PR.
