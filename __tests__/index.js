@@ -246,6 +246,7 @@ describe('Opentracing interface', () => {
     });
 
     describe('inject (serialize)', () => {
+        // not relevant for us
         describe('Text Map', () => {
             it('should be implemented');
         });
@@ -255,12 +256,14 @@ describe('Opentracing interface', () => {
             it('should handle parent spans correctly');
         });
 
+        // not relevant for us
         describe('Binary', () => {
             it('should be implemented');
         });
     });
 
     describe('eject (deserialize)', () => {
+        // not relevant for us
         describe('Text Map', () => {
             it('should be implemented');
         });
@@ -270,6 +273,7 @@ describe('Opentracing interface', () => {
             it('should handle parent spans correctly');
         });
 
+        // not relevant for us
         describe('Binary', () => {
             it('should be implemented');
         });

@@ -7,3 +7,7 @@
 Please see the examples in the `examples/` directory.
 
 ## Limitations
+
+### injecting and ejecting
+
+We currently only support HTTP Headers. If you need your own mechanism, feel free to do a PR.
