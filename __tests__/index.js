@@ -17,6 +17,7 @@ describe('Opentracing interface', () => {
             });
         }).toThrow();
     });
+
     it('should create a tracer', () => {
         const tracer = new Tracer({
             serviceName: 'MyService',
@@ -230,7 +231,18 @@ describe('Opentracing interface', () => {
     });
 
     describe('usage of recorder', () => {
-        it('should initialize zipkin with the recorder');
+        it('should initialize zipkin with the recorder provided', () => {
+            zipkin.Tracer.mockReset();
+            new Tracer({
+                serviceName: 'MyService',
+                recorder: { id: 42 },
+            });
+
+            expect(zipkin.Tracer).toHaveBeenCalledWith({
+                ctxImpl: {},
+                recorder: { id: 42 },
+            });
+        });
     });
 
     describe('inject (serialize)', () => {
