@@ -37,6 +37,8 @@
   "homepage": "https://github.com/costacruise/zipkin-javascript-opentracing#readme",
   "devDependencies": {
     "jest": "^20.0.4",
-    "opentracing": "^0.14.1"
+    "opentracing": "^0.14.1",
+    "zipkin": "^0.7.1",
+    "zipkin-transport-http": "^0.7.1"
   }
 }
