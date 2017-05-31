@@ -42,91 +42,93 @@ describe('mock', () => {
             mockFetch.mockReset();
         });
 
-        it('should record a simple request', () => {
-            tracer.scoped(() => {
-                tracer.setId(tracer.createRootId());
-                tracer.recordServiceName('My Service');
-                tracer.recordBinary('spanName', 'My Span');
-                tracer.recordAnnotation(new Annotation.ServerSend());
+        describe('startSpan', () => {
+            it('should record a simple request', () => {
+                tracer.scoped(() => {
+                    tracer.setId(tracer.createRootId());
+                    tracer.recordServiceName('My Service');
+                    tracer.recordBinary('spanName', 'My Span');
+                    tracer.recordAnnotation(new Annotation.ServerSend());
+                });
+
+                jest.runOnlyPendingTimers();
+
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
+
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json.length).toBe(1);
+                expect(Object.keys(json[0])).toEqual([
+                    'traceId',
+                    'name',
+                    'id',
+                    'annotations',
+                    'binaryAnnotations',
+                    'timestamp',
+                    'duration',
+                ]);
+                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations[0].endpoint.serviceName).toBe(
+                    'My Service'
+                );
+                expect(json[0].binaryAnnotations.length).toBe(1);
+                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
             });
 
-            jest.runOnlyPendingTimers();
+            it('should record logs', () => {
+                tracer.scoped(() => {
+                    tracer.setId(tracer.createRootId());
+                    tracer.recordServiceName('My Service');
+                    tracer.recordBinary('spanName', 'My Span');
+                    tracer.recordBinary('statusCode', '200');
+                    tracer.recordBinary('objectId', '42');
+                    tracer.recordAnnotation(new Annotation.ServerSend());
+                });
 
-            expect(mockFetch).toHaveBeenCalled();
-            const [
-                endpoint,
-                { method, body, headers },
-            ] = mockFetch.mock.calls[0];
+                jest.runOnlyPendingTimers();
 
-            expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
-            expect(method).toBe('POST');
-            expect(Object.keys(headers)).toEqual(
-                expect.arrayContaining(['Accept', 'Content-Type'])
-            );
-            const json = JSON.parse(body);
-            expect(json.length).toBe(1);
-            expect(Object.keys(json[0])).toEqual([
-                'traceId',
-                'name',
-                'id',
-                'annotations',
-                'binaryAnnotations',
-                'timestamp',
-                'duration',
-            ]);
-            expect(json[0].annotations.length).toBe(1);
-            expect(json[0].annotations[0].endpoint.serviceName).toBe(
-                'My Service'
-            );
-            expect(json[0].binaryAnnotations.length).toBe(1);
-            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
-        });
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
 
-        it('should record logs', () => {
-            tracer.scoped(() => {
-                tracer.setId(tracer.createRootId());
-                tracer.recordServiceName('My Service');
-                tracer.recordBinary('spanName', 'My Span');
-                tracer.recordBinary('statusCode', '200');
-                tracer.recordBinary('objectId', '42');
-                tracer.recordAnnotation(new Annotation.ServerSend());
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json.length).toBe(1);
+                expect(Object.keys(json[0])).toEqual([
+                    'traceId',
+                    'name',
+                    'id',
+                    'annotations',
+                    'binaryAnnotations',
+                    'timestamp',
+                    'duration',
+                ]);
+                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations[0].endpoint.serviceName).toBe(
+                    'My Service'
+                );
+                expect(json[0].binaryAnnotations.length).toBe(3);
+                expect(json[0].binaryAnnotations[0].key).toBe('spanName');
+                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
+                expect(json[0].binaryAnnotations[1].key).toBe('statusCode');
+                expect(json[0].binaryAnnotations[1].value).toBe('200');
+                expect(json[0].binaryAnnotations[2].key).toBe('objectId');
+                expect(json[0].binaryAnnotations[2].value).toBe('42');
             });
-
-            jest.runOnlyPendingTimers();
-
-            expect(mockFetch).toHaveBeenCalled();
-            const [
-                endpoint,
-                { method, body, headers },
-            ] = mockFetch.mock.calls[0];
-
-            expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
-            expect(method).toBe('POST');
-            expect(Object.keys(headers)).toEqual(
-                expect.arrayContaining(['Accept', 'Content-Type'])
-            );
-            const json = JSON.parse(body);
-            expect(json.length).toBe(1);
-            expect(Object.keys(json[0])).toEqual([
-                'traceId',
-                'name',
-                'id',
-                'annotations',
-                'binaryAnnotations',
-                'timestamp',
-                'duration',
-            ]);
-            expect(json[0].annotations.length).toBe(1);
-            expect(json[0].annotations[0].endpoint.serviceName).toBe(
-                'My Service'
-            );
-            expect(json[0].binaryAnnotations.length).toBe(3);
-            expect(json[0].binaryAnnotations[0].key).toBe('spanName');
-            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
-            expect(json[0].binaryAnnotations[1].key).toBe('statusCode');
-            expect(json[0].binaryAnnotations[1].value).toBe('200');
-            expect(json[0].binaryAnnotations[2].key).toBe('objectId');
-            expect(json[0].binaryAnnotations[2].value).toBe('42');
         });
     });
 
@@ -146,87 +148,89 @@ describe('mock', () => {
             });
         });
 
-        it('should record a simple request', () => {
-            const span = tracer.startSpan('My Span');
-            span.finish();
+        describe('startSpan', () => {
+            it('should record a simple request', () => {
+                const span = tracer.startSpan('My Span');
+                span.finish();
 
-            jest.runOnlyPendingTimers();
+                jest.runOnlyPendingTimers();
 
-            expect(mockFetch).toHaveBeenCalled();
-            const [
-                endpoint,
-                { method, body, headers },
-            ] = mockFetch.mock.calls[0];
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
 
-            expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
-            expect(method).toBe('POST');
-            expect(Object.keys(headers)).toEqual(
-                expect.arrayContaining(['Accept', 'Content-Type'])
-            );
-            const json = JSON.parse(body);
-            expect(json.length).toBe(1);
-            expect(Object.keys(json[0])).toEqual([
-                'traceId',
-                'name',
-                'id',
-                'annotations',
-                'binaryAnnotations',
-                'timestamp',
-                'duration',
-            ]);
-            expect(json[0].annotations.length).toBe(1);
-            expect(json[0].annotations[0].endpoint.serviceName).toBe(
-                'My Service'
-            );
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json.length).toBe(1);
+                expect(Object.keys(json[0])).toEqual([
+                    'traceId',
+                    'name',
+                    'id',
+                    'annotations',
+                    'binaryAnnotations',
+                    'timestamp',
+                    'duration',
+                ]);
+                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations[0].endpoint.serviceName).toBe(
+                    'My Service'
+                );
 
-            expect(json[0].binaryAnnotations.length).toBe(1);
-            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
-        });
-
-        it('should record logs', () => {
-            const span = tracer.startSpan('My Span');
-            span.log({
-                statusCode: '200',
-                objectId: '42',
+                expect(json[0].binaryAnnotations.length).toBe(1);
+                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
             });
 
-            span.finish();
+            it('should record logs', () => {
+                const span = tracer.startSpan('My Span');
+                span.log({
+                    statusCode: '200',
+                    objectId: '42',
+                });
 
-            jest.runOnlyPendingTimers();
+                span.finish();
 
-            expect(mockFetch).toHaveBeenCalled();
-            const [
-                endpoint,
-                { method, body, headers },
-            ] = mockFetch.mock.calls[0];
+                jest.runOnlyPendingTimers();
 
-            expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
-            expect(method).toBe('POST');
-            expect(Object.keys(headers)).toEqual(
-                expect.arrayContaining(['Accept', 'Content-Type'])
-            );
-            const json = JSON.parse(body);
-            expect(json.length).toBe(1);
-            expect(Object.keys(json[0])).toEqual([
-                'traceId',
-                'name',
-                'id',
-                'annotations',
-                'binaryAnnotations',
-                'timestamp',
-                'duration',
-            ]);
-            expect(json[0].annotations.length).toBe(1);
-            expect(json[0].annotations[0].endpoint.serviceName).toBe(
-                'My Service'
-            );
-            expect(json[0].binaryAnnotations.length).toBe(3);
-            expect(json[0].binaryAnnotations[0].key).toBe('spanName');
-            expect(json[0].binaryAnnotations[0].value).toBe('My Span');
-            expect(json[0].binaryAnnotations[1].key).toBe('statusCode');
-            expect(json[0].binaryAnnotations[1].value).toBe('200');
-            expect(json[0].binaryAnnotations[2].key).toBe('objectId');
-            expect(json[0].binaryAnnotations[2].value).toBe('42');
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
+
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json.length).toBe(1);
+                expect(Object.keys(json[0])).toEqual([
+                    'traceId',
+                    'name',
+                    'id',
+                    'annotations',
+                    'binaryAnnotations',
+                    'timestamp',
+                    'duration',
+                ]);
+                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations[0].endpoint.serviceName).toBe(
+                    'My Service'
+                );
+                expect(json[0].binaryAnnotations.length).toBe(3);
+                expect(json[0].binaryAnnotations[0].key).toBe('spanName');
+                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
+                expect(json[0].binaryAnnotations[1].key).toBe('statusCode');
+                expect(json[0].binaryAnnotations[1].value).toBe('200');
+                expect(json[0].binaryAnnotations[2].key).toBe('objectId');
+                expect(json[0].binaryAnnotations[2].value).toBe('42');
+            });
         });
     });
 });
