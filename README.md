@@ -4,6 +4,6 @@
 ## Installation
 
 ## Usage
-
+Please see the examples in the `examples/` directory.
 
 ## Limitations
