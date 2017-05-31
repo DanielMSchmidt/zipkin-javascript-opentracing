@@ -21,6 +21,9 @@ const {
 } = require('zipkin');
 const { HttpLogger } = require('zipkin-transport-http');
 const fetch = require('node-fetch');
+const opentracing = require('opentracing');
+
+const ZipkinJavascriptOpentracing = require('../index');
 
 describe('mock', () => {
     it('should capture fetches', () => {
@@ -136,8 +139,6 @@ describe('mock', () => {
         let tracer;
         beforeEach(() => {
             mockFetch.mockReset();
-            const opentracing = require('opentracing');
-            const ZipkinJavascriptOpentracing = require('../index');
             tracer = new ZipkinJavascriptOpentracing({
                 serviceName: 'My Service',
                 recorder: new BatchRecorder({
@@ -231,6 +232,25 @@ describe('mock', () => {
                 expect(json[0].binaryAnnotations[2].key).toBe('objectId');
                 expect(json[0].binaryAnnotations[2].value).toBe('42');
             });
+        });
+
+        describe('inject', () => {
+            it('should set every defined HTTP Header', () => {
+                const span = tracer.startSpan('My Span');
+
+                const carrier = {};
+                tracer.inject(
+                    span,
+                    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                    carrier
+                );
+
+                expect(carrier['X-B3-TraceId']).toBeDefined();
+                expect(carrier['X-B3-SpanId']).toBeDefined();
+                expect(carrier['X-B3-Sampled']).toBeDefined();
+            });
+
+            it('should set the parentId');
         });
     });
 });

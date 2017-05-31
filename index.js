@@ -1,4 +1,10 @@
-const { Annotation, ExplicitContext, Tracer, TraceId } = require('zipkin');
+const {
+    Annotation,
+    ExplicitContext,
+    Tracer,
+    TraceId,
+    Request,
+} = require('zipkin');
 
 // copied from https://github.com/openzipkin/zipkin-js/blob/master/packages/zipkin/src/tracer/randomTraceId.js
 function randomTraceId() {
@@ -90,6 +96,27 @@ class Tracing {
 
         return new this._Span(name, options);
     }
+
+    inject(span, format, carrier) {
+        if (typeof span !== 'object') {
+            throw new Error('inject called without a span');
+        }
+
+        if (format !== Tracing.FORMAT_HTTP_HEADERS) {
+            throw new Error('inject called with unsupported format');
+        }
+
+        if (typeof carrier !== 'object') {
+            throw new Error('inject called without a carrier object');
+        }
+
+        const { headers } = Request.addZipkinHeaders({}, span.id);
+        Object.assign(carrier, headers);
+    }
 }
+
+Tracing.FORMAT_TEXT_MAP = 'FORMAT_TEXT_MAP';
+Tracing.FORMAT_HTTP_HEADERS = 'FORMAT_HTTP_HEADERS';
+Tracing.FORMAT_BINARY = 'FORMAT_BINARY';
 
 module.exports = Tracing;

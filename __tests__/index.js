@@ -222,6 +222,12 @@ describe('Opentracing interface', () => {
             it('should use the right id in setTags');
             it('should setTags');
         });
+
+        it('should expose inject/extract formats', () => {
+            expect(Tracer.FORMAT_TEXT_MAP).toBeDefined();
+            expect(Tracer.FORMAT_HTTP_HEADERS).toBeDefined();
+            expect(Tracer.FORMAT_BINARY).toBeDefined();
+        });
     });
 
     describe('usage of sampler', () => {
@@ -232,7 +238,6 @@ describe('Opentracing interface', () => {
 
     describe('usage of recorder', () => {
         it('should initialize zipkin with the recorder provided', () => {
-            zipkin.Tracer.mockReset();
             new Tracer({
                 serviceName: 'MyService',
                 recorder: { id: 42 },
@@ -246,19 +251,74 @@ describe('Opentracing interface', () => {
     });
 
     describe('inject (serialize)', () => {
+        let tracer;
+        let zipkinTracer;
+        beforeEach(() => {
+            tracer = new Tracer({ serviceName: 'MyService', recorder: {} });
+            zipkinTracer = tracer._zipkinTracer;
+        });
+
         // not relevant for us
         describe('Text Map', () => {
-            it('should be implemented');
+            it('should throw an error, because it is unsupported', () => {
+                const span = tracer.startSpan('Span');
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(() => {
+                    const carrier = {};
+                    tracer.inject(span, Tracer.FORMAT_TEXT_MAP, carrier);
+                }).toThrow();
+            });
         });
 
         describe('HTTP Headers', () => {
-            it('should handle child spans correctly');
-            it('should handle parent spans correctly');
+            it('should throw without a span', () => {
+                expect(() => {
+                    const carrier = {};
+                    tracer.inject(
+                        undefined,
+                        Tracer.FORMAT_HTTP_HEADERS,
+                        carrier
+                    );
+                }).toThrow();
+            });
+
+            it('should throw without a carrier', () => {
+                const span = tracer.startSpan('Span');
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+                expect(() => {
+                    tracer.inject(span, Tracer.FORMAT_HTTP_HEADERS);
+                }).toThrow();
+            });
+
+            it('should call the underlying method', () => {
+                const span = tracer.startSpan('Span');
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                const carrier = { couldBe: 'anything request related' };
+                tracer.inject(span, Tracer.FORMAT_HTTP_HEADERS, carrier);
+
+                expect(
+                    zipkin.Request.addZipkinHeaders
+                ).toHaveBeenLastCalledWith({}, span.id);
+            });
         });
 
         // not relevant for us
         describe('Binary', () => {
-            it('should be implemented');
+            it('should throw an error, because it is unsupported', () => {
+                const span = tracer.startSpan('Span');
+                expect(() => {
+                    const carrier = {};
+                    tracer.inject(span, Tracer.FORMAT_BINARY, carrier);
+                }).toThrow();
+            });
         });
     });
 
