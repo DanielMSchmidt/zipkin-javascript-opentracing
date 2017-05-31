@@ -4,14 +4,23 @@ const zipkin = require('zipkin');
 
 // FollowsFrom is not supported by open tracing
 describe('Opentracing interface', () => {
-    it('should fail a tracer without a service name', () => {
+    it('should fail to init tracer without a service name', () => {
         expect(() => {
             new Tracer();
+        }).toThrow();
+    });
+
+    it('should fail to init tracer without a recorder', () => {
+        expect(() => {
+            new Tracer({
+                serviceName: 'MyService',
+            });
         }).toThrow();
     });
     it('should create a tracer', () => {
         const tracer = new Tracer({
             serviceName: 'MyService',
+            recorder: {},
         });
 
         expect(tracer).toBeInstanceOf(Tracer);
@@ -20,6 +29,7 @@ describe('Opentracing interface', () => {
     it('should initialize a zipkin tracer', () => {
         const tracer = new Tracer({
             serviceName: 'MyService',
+            recorder: {},
         });
 
         expect(zipkin.Tracer).toHaveBeenCalled();
@@ -29,6 +39,7 @@ describe('Opentracing interface', () => {
         opentracing.initGlobalTracer(
             new Tracer({
                 serviceName: 'MyService',
+                recorder: {},
             })
         );
 
@@ -42,7 +53,7 @@ describe('Opentracing interface', () => {
         let tracer;
         let zipkinTracer;
         beforeEach(() => {
-            tracer = new Tracer({ serviceName: 'MyService' });
+            tracer = new Tracer({ serviceName: 'MyService', recorder: {} });
             zipkinTracer = tracer._zipkinTracer;
             zipkinTracer.scoped.mockReset();
         });

@@ -63,10 +63,16 @@ class Tracing {
         if (typeof options.serviceName !== 'string') {
             throw new Error('serviceName option needs to be provided');
         }
+
+        if (typeof options.recorder !== 'object') {
+            throw new Error('recorder option needs to be provided');
+        }
+
         this._serviceName = options.serviceName;
 
         this._zipkinTracer = new Tracer({
-            ctxImpl: ExplicitContext(),
+            ctxImpl: new ExplicitContext(),
+            recorder: options.recorder,
         });
         this._Span = SpanCreator({
             tracer: this._zipkinTracer,
