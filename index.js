@@ -68,6 +68,7 @@ function SpanCreator({ tracer, serviceName }) {
                 tracer.setId(id);
                 tracer.recordBinary('spanName', spanName);
                 tracer.recordServiceName(serviceName);
+                // XXX: Add receive type annotation^
             });
         }
 
@@ -124,6 +125,8 @@ class Tracing {
             );
         }
 
+        // XXX: expect kind to be set
+
         return new this._Span(name, options);
     }
 
@@ -141,6 +144,10 @@ class Tracing {
         }
 
         const { headers } = Request.addZipkinHeaders({}, span.id);
+        // get rid of remains of Some
+        Object.entries(headers).forEach(
+            ([key, value]) => (headers[key] = value.value ? value.value : value)
+        );
         Object.assign(carrier, headers);
     }
 
@@ -153,7 +160,7 @@ class Tracing {
             throw new Error('extract called without a carrier');
         }
 
-        // XXX: no empty string here
+        // XXX: no empty string here v
         return new this._Span('', {
             traceId: {
                 traceId: carrier[HttpHeaders.TraceId],

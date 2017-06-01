@@ -254,40 +254,97 @@ describe('mock', () => {
         });
 
         describe('extract', () => {
-            it.only(
-                'should use the span and trace id of the given headers',
-                () => {
-                    const previousHeaders = {
-                        'X-B3-TraceId': '30871be42b0fd4781',
-                        'X-B3-SpanId': '30871be42b0fd4782',
-                    };
+            it('should use the span and trace id of the given headers', () => {
+                const previousHeaders = {
+                    'X-B3-TraceId': '30871be42b0fd4781',
+                    'X-B3-SpanId': '30871be42b0fd4782',
+                };
 
-                    const span = tracer.extract(
-                        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-                        previousHeaders
-                    );
+                const span = tracer.extract(
+                    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                    previousHeaders
+                );
 
-                    span.finish();
+                span.finish();
 
-                    jest.runOnlyPendingTimers();
+                jest.runOnlyPendingTimers();
 
-                    expect(mockFetch).toHaveBeenCalled();
-                    const [
-                        endpoint,
-                        { method, body, headers },
-                    ] = mockFetch.mock.calls[0];
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
 
-                    expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
-                    expect(method).toBe('POST');
-                    expect(Object.keys(headers)).toEqual(
-                        expect.arrayContaining(['Accept', 'Content-Type'])
-                    );
-                    const json = JSON.parse(body);
-                    expect(json[0].traceId).toBe('30871be42b0fd4781');
-                    expect(json[0].id.value).toBe('30871be42b0fd4782');
-                }
-            );
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json[0].traceId).toBe('30871be42b0fd4781');
+                expect(json[0].id.value).toBe('30871be42b0fd4782');
+            });
             it('should use the parentId of the given headers');
+        });
+
+        describe('inject + extract', () => {
+            let tracer;
+            let zipkinTracer;
+            beforeEach(() => {
+                tracer = new ZipkinJavascriptOpentracing({
+                    serviceName: 'MyService',
+                    recorder: new BatchRecorder({
+                        logger: new HttpLogger({
+                            endpoint: 'http://localhost:9411/api/v1/spans',
+                        }),
+                    }),
+                });
+                zipkinTracer = tracer._zipkinTracer;
+            });
+
+            describe('HTTP Headers', () => {
+                it('should work with injecting and extracting in a row', () => {
+                    const span = tracer.startSpan('My Span');
+
+                    const headers = {};
+                    tracer.inject(
+                        span,
+                        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                        headers
+                    );
+                    const newSpan = tracer.extract(
+                        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                        headers
+                    );
+
+                    expect(newSpan.id._spanId.value).toEqual(span.id._spanId);
+                    expect(newSpan.id._traceId.value).toEqual(span.id.traceId);
+                });
+
+                it.only(
+                    'should work with extracting and injecting in a row',
+                    () => {
+                        const headers = {
+                            'X-B3-Sampled': '1',
+                            'X-B3-SpanId': 'a07ee38e6b11dc0c1',
+                            'X-B3-TraceId': 'a07ee38e6b11dc0c2',
+                        };
+                        const span = tracer.extract(
+                            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                            headers
+                        );
+
+                        const newHeaders = {};
+                        tracer.inject(
+                            span,
+                            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                            newHeaders
+                        );
+
+                        expect(newHeaders).toEqual(headers);
+                    }
+                );
+            });
         });
     });
 });
