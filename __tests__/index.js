@@ -6,7 +6,7 @@ describe('Opentracing interface', () => {
     it('should fail to init tracer without a service name', () => {
         expect(() => {
             new Tracer();
-        }).toThrow();
+        }).toThrowErrorMatchingSnapshot();
     });
 
     it('should fail to init tracer without a recorder', () => {
@@ -14,7 +14,7 @@ describe('Opentracing interface', () => {
             new Tracer({
                 serviceName: 'MyService',
             });
-        }).toThrow();
+        }).toThrowErrorMatchingSnapshot();
     });
 
     it('should create a tracer', () => {
@@ -201,7 +201,7 @@ describe('Opentracing interface', () => {
                     // should do it in a scope
                     expect(zipkinTracer.scoped).toHaveBeenCalled();
                     zipkinTracer.scoped.mock.calls[0][0]();
-                }).not.toThrow();
+                }).not.toThrowError();
             });
 
             it('should finish a span', () => {
@@ -318,7 +318,7 @@ describe('Opentracing interface', () => {
                 expect(() => {
                     const carrier = {};
                     tracer.inject(span, Tracer.FORMAT_TEXT_MAP, carrier);
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
         });
 
@@ -331,7 +331,7 @@ describe('Opentracing interface', () => {
                         Tracer.FORMAT_HTTP_HEADERS,
                         carrier
                     );
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
 
             it('should throw without a carrier', () => {
@@ -341,7 +341,7 @@ describe('Opentracing interface', () => {
                 zipkinTracer.scoped.mock.calls[0][0]();
                 expect(() => {
                     tracer.inject(span, Tracer.FORMAT_HTTP_HEADERS);
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
 
             it('should call the underlying method', () => {
@@ -366,7 +366,7 @@ describe('Opentracing interface', () => {
                 expect(() => {
                     const carrier = {};
                     tracer.inject(span, Tracer.FORMAT_BINARY, carrier);
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
         });
     });
@@ -385,7 +385,7 @@ describe('Opentracing interface', () => {
                 expect(() => {
                     const carrier = {};
                     tracer.extract(Tracer.FORMAT_TEXT_MAP, carrier);
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
         });
 
@@ -393,7 +393,7 @@ describe('Opentracing interface', () => {
             it('should fail with an invalid carrier', () => {
                 expect(() => {
                     tracer.extract(Tracer.FORMAT_HTTP_HEADERS, true);
-                }).toThrow();
+                }).toThrowErrorMatchingSnapshot();
             });
 
             it('should return a valid without http headers', () => {
@@ -407,7 +407,7 @@ describe('Opentracing interface', () => {
                     expect(span.id.sampled).toBeDefined();
                     expect(span.log).toBeInstanceOf(Function);
                     expect(span.finish).toBeInstanceOf(Function);
-                }).not.toThrow();
+                }).not.toThrowError();
             });
 
             it('should handle child spans correctly', () => {
@@ -458,7 +458,7 @@ describe('Opentracing interface', () => {
             expect(() => {
                 const carrier = {};
                 tracer.extract(Tracer.FORMAT_BINARY, carrier);
-            }).toThrow();
+            }).toThrowErrorMatchingSnapshot();
         });
     });
 });

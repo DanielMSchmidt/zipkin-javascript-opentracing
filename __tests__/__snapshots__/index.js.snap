@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[` 1`] = `"Cannot read property 'extract' of undefined"`;
+
+exports[`Opentracing interface extract (deserialize) HTTP Headers should fail with an invalid carrier 1`] = `"extract called without a carrier"`;
+
+exports[`Opentracing interface extract (deserialize) Text Map should throw an error, because it is unsupported 1`] = `"extract called with unsupported format"`;
+
+exports[`Opentracing interface inject (serialize) Binary should throw an error, because it is unsupported 1`] = `"inject called with unsupported format"`;
+
+exports[`Opentracing interface inject (serialize) HTTP Headers should throw without a carrier 1`] = `"inject called without a carrier object"`;
+
+exports[`Opentracing interface inject (serialize) HTTP Headers should throw without a span 1`] = `"inject called without a span"`;
+
+exports[`Opentracing interface inject (serialize) Text Map should throw an error, because it is unsupported 1`] = `"inject called with unsupported format"`;
+
+exports[`Opentracing interface should fail to init tracer without a recorder 1`] = `"recorder option needs to be provided"`;
+
+exports[`Opentracing interface should fail to init tracer without a service name 1`] = `"serviceName option needs to be provided"`;
