@@ -2,7 +2,6 @@ const opentracing = require('opentracing');
 const Tracer = require('../index');
 const zipkin = require('zipkin');
 
-// FollowsFrom is not supported by open tracing
 describe('Opentracing interface', () => {
     it('should fail to init tracer without a service name', () => {
         expect(() => {

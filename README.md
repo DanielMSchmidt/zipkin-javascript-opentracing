@@ -16,3 +16,8 @@ We currently only support HTTP Headers. If you need your own mechanism, feel fre
 ### Flags
 
 They are currently not supported, feel free to do a PR.
+
+
+### Follows From (zipkin)
+
+FollowsFrom is not supported by openTracing, as far as I understand it.
