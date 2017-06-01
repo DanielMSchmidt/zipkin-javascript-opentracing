@@ -64,6 +64,17 @@ describe('Opentracing interface', () => {
             }).toThrowError();
         });
 
+        // used for extracted spans
+        it('should start a span with no name, provided an empty string', () => {
+            tracer.startSpan('', { kind: 'client' });
+
+            // should do it in a scope
+            expect(zipkinTracer.scoped).toHaveBeenCalled();
+            zipkinTracer.scoped.mock.calls[0][0]();
+
+            expect(zipkinTracer.recordBinary).not.toHaveBeenCalled();
+        });
+
         it('should not start a span without a kind being set', () => {
             expect(() => {
                 tracer.startSpan('foo', {});

@@ -79,7 +79,7 @@ function SpanCreator({ tracer, serviceName }) {
 
             tracer.scoped(() => {
                 tracer.setId(id);
-                tracer.recordBinary('spanName', spanName);
+                spanName !== '' && tracer.recordBinary('spanName', spanName);
                 tracer.recordServiceName(serviceName);
                 tracer.recordAnnotation(getReceiveAnnotation(options.kind));
             });
