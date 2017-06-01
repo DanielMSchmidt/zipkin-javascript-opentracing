@@ -390,7 +390,13 @@ describe('Opentracing interface', () => {
         });
 
         describe('HTTP Headers', () => {
-            it('should return a valid  without http headers', () => {
+            it('should fail with an invalid carrier', () => {
+                expect(() => {
+                    tracer.extract(Tracer.FORMAT_HTTP_HEADERS, true);
+                }).toThrow();
+            });
+
+            it('should return a valid without http headers', () => {
                 expect(() => {
                     const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, {});
                     expect(zipkinTracer.scoped).toHaveBeenCalled();
