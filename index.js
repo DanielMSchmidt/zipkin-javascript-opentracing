@@ -1,9 +1,11 @@
 const {
     Annotation,
     ExplicitContext,
-    Tracer,
-    TraceId,
+    HttpHeaders,
     Request,
+    TraceId,
+    option: { Some, None },
+    Tracer,
 } = require('zipkin');
 
 // copied from https://github.com/openzipkin/zipkin-js/blob/master/packages/zipkin/src/tracer/randomTraceId.js
@@ -18,20 +20,48 @@ function randomTraceId() {
     return n;
 }
 
+function makeOptional(val) {
+    if (val != null) {
+        return new Some(val);
+    } else {
+        return None;
+    }
+}
+
 function SpanCreator({ tracer, serviceName }) {
     return class Span {
-        constructor(spanName, options) {
-            let id;
+        getTraceId(options) {
+            // construct from give traceId
+            if (
+                typeof options.traceId === 'object' &&
+                typeof options.traceId.spanId === 'string'
+            ) {
+                const { traceId, parentId, spanId, sampled } = options.traceId;
+                return new TraceId({
+                    traceId: makeOptional(traceId),
+                    parentId: makeOptional(parentId),
+                    spanId: makeOptional(spanId),
+                    sampled: makeOptional(sampled),
+                });
+            }
+
+            // construct with parent
             if (typeof options.childOf === 'object') {
                 const parent = options.childOf;
-                id = new TraceId({
+
+                return new TraceId({
                     traceId: parent.traceId,
                     parentId: parent.spanId,
                     spanId: randomTraceId(),
                 });
-            } else {
-                id = tracer.createRootId();
             }
+
+            // construct from give traceId
+            return tracer.createRootId();
+        }
+
+        constructor(spanName, options) {
+            const id = this.getTraceId(options);
             this.id = id;
 
             tracer.scoped(() => {
@@ -112,6 +142,26 @@ class Tracing {
 
         const { headers } = Request.addZipkinHeaders({}, span.id);
         Object.assign(carrier, headers);
+    }
+
+    extract(format, carrier) {
+        if (format !== Tracing.FORMAT_HTTP_HEADERS) {
+            throw new Error('extract called with unsupported format');
+        }
+
+        if (typeof carrier !== 'object') {
+            throw new Error('extract called without a carrier');
+        }
+
+        // XXX: no empty string here
+        return new this._Span('', {
+            traceId: {
+                traceId: carrier[HttpHeaders.TraceId],
+                parentId: carrier[HttpHeaders.ParentSpanId],
+                spanId: carrier[HttpHeaders.SpanId],
+                sampled: carrier[HttpHeaders.Sampled],
+            },
+        });
     }
 }
 

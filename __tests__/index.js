@@ -321,20 +321,88 @@ describe('Opentracing interface', () => {
         });
     });
 
-    describe('eject (deserialize)', () => {
+    describe('extract (deserialize)', () => {
+        let tracer;
+        let zipkinTracer;
+        beforeEach(() => {
+            tracer = new Tracer({ serviceName: 'MyService', recorder: {} });
+            zipkinTracer = tracer._zipkinTracer;
+        });
+
         // not relevant for us
         describe('Text Map', () => {
-            it('should be implemented');
+            it('should throw an error, because it is unsupported', () => {
+                expect(() => {
+                    const carrier = {};
+                    tracer.extract(Tracer.FORMAT_TEXT_MAP, carrier);
+                }).toThrow();
+            });
         });
 
         describe('HTTP Headers', () => {
-            it('should handle child spans correctly');
-            it('should handle parent spans correctly');
+            it('should return a valid  without http headers', () => {
+                expect(() => {
+                    const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, {});
+                    expect(zipkinTracer.scoped).toHaveBeenCalled();
+                    zipkinTracer.scoped.mock.calls[0][0]();
+
+                    expect(span.id.traceId).toBeDefined();
+                    expect(span.id.spanId).toBeDefined();
+                    expect(span.id.sampled).toBeDefined();
+                    expect(span.log).toBeInstanceOf(Function);
+                    expect(span.finish).toBeInstanceOf(Function);
+                }).not.toThrow();
+            });
+
+            it('should handle child spans correctly', () => {
+                const httpHeaders = {
+                    'X-B3-TraceId': 'myTraceId',
+                    'X-B3-SpanId': 'mySpanId',
+                    'X-B3-Sampled': '1',
+                };
+                const span = tracer.extract(
+                    Tracer.FORMAT_HTTP_HEADERS,
+                    httpHeaders
+                );
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(span.id.traceId.value).toBe('myTraceId');
+                expect(span.id.spanId.value).toBe('mySpanId');
+                expect(span.id.sampled.value).toBe('1');
+                expect(span.log).toBeInstanceOf(Function);
+                expect(span.finish).toBeInstanceOf(Function);
+            });
+
+            it('should handle parent spans correctly', () => {
+                const httpHeaders = {
+                    'X-B3-TraceId': 'myTraceId',
+                    'X-B3-SpanId': 'mySpanId',
+                    'X-B3-ParentSpanId': 'myParentSpanId',
+                    'X-B3-Sampled': '1',
+                };
+                const span = tracer.extract(
+                    Tracer.FORMAT_HTTP_HEADERS,
+                    httpHeaders
+                );
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(span.id.traceId.value).toBe('myTraceId');
+                expect(span.id.spanId.value).toBe('mySpanId');
+                expect(span.id.parentId.value).toBe('myParentSpanId');
+                expect(span.id.sampled.value).toBe('1');
+                expect(span.log).toBeInstanceOf(Function);
+                expect(span.finish).toBeInstanceOf(Function);
+            });
         });
 
         // not relevant for us
         describe('Binary', () => {
-            it('should be implemented');
+            expect(() => {
+                const carrier = {};
+                tracer.extract(Tracer.FORMAT_BINARY, carrier);
+            }).toThrow();
         });
     });
 });
