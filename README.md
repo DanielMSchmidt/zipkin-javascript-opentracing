@@ -21,3 +21,12 @@ They are currently not supported, feel free to do a PR.
 ### Follows From (zipkin)
 
 FollowsFrom is not supported by openTracing, as far as I understand it.
+
+### Tags
+
+Zipkin doesn't distinguish between logs and tags.
+
+### Additional options for starting a span
+
+We need to know if this is a server or client to set the right annotations.
+Therefore we need the kind attribute to be set.
