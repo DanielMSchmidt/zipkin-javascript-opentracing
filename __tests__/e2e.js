@@ -151,7 +151,7 @@ describe('mock', () => {
 
         describe('startSpan', () => {
             it('should record a simple request', () => {
-                const span = tracer.startSpan('My Span');
+                const span = tracer.startSpan('My Span', { kind: 'server' });
                 span.finish();
 
                 jest.runOnlyPendingTimers();
@@ -175,10 +175,8 @@ describe('mock', () => {
                     'id',
                     'annotations',
                     'binaryAnnotations',
-                    'timestamp',
-                    'duration',
                 ]);
-                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations.length).toBe(2);
                 expect(json[0].annotations[0].endpoint.serviceName).toBe(
                     'My Service'
                 );
@@ -188,7 +186,7 @@ describe('mock', () => {
             });
 
             it('should record logs', () => {
-                const span = tracer.startSpan('My Span');
+                const span = tracer.startSpan('My Span', { kind: 'server' });
                 span.log({
                     statusCode: '200',
                     objectId: '42',
@@ -217,10 +215,8 @@ describe('mock', () => {
                     'id',
                     'annotations',
                     'binaryAnnotations',
-                    'timestamp',
-                    'duration',
                 ]);
-                expect(json[0].annotations.length).toBe(1);
+                expect(json[0].annotations.length).toBe(2);
                 expect(json[0].annotations[0].endpoint.serviceName).toBe(
                     'My Service'
                 );
@@ -236,7 +232,7 @@ describe('mock', () => {
 
         describe('inject', () => {
             it('should set every defined HTTP Header', () => {
-                const span = tracer.startSpan('My Span');
+                const span = tracer.startSpan('My Span', { kind: 'server' });
 
                 const carrier = {};
                 tracer.inject(
@@ -304,7 +300,9 @@ describe('mock', () => {
 
             describe('HTTP Headers', () => {
                 it('should work with injecting and extracting in a row', () => {
-                    const span = tracer.startSpan('My Span');
+                    const span = tracer.startSpan('My Span', {
+                        kind: 'server',
+                    });
 
                     const headers = {};
                     tracer.inject(
@@ -321,29 +319,26 @@ describe('mock', () => {
                     expect(newSpan.id._traceId.value).toEqual(span.id.traceId);
                 });
 
-                it.only(
-                    'should work with extracting and injecting in a row',
-                    () => {
-                        const headers = {
-                            'X-B3-Sampled': '1',
-                            'X-B3-SpanId': 'a07ee38e6b11dc0c1',
-                            'X-B3-TraceId': 'a07ee38e6b11dc0c2',
-                        };
-                        const span = tracer.extract(
-                            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-                            headers
-                        );
+                it('should work with extracting and injecting in a row', () => {
+                    const headers = {
+                        'X-B3-Sampled': '1',
+                        'X-B3-SpanId': 'a07ee38e6b11dc0c1',
+                        'X-B3-TraceId': 'a07ee38e6b11dc0c2',
+                    };
+                    const span = tracer.extract(
+                        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                        headers
+                    );
 
-                        const newHeaders = {};
-                        tracer.inject(
-                            span,
-                            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-                            newHeaders
-                        );
+                    const newHeaders = {};
+                    tracer.inject(
+                        span,
+                        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                        newHeaders
+                    );
 
-                        expect(newHeaders).toEqual(headers);
-                    }
-                );
+                    expect(newHeaders).toEqual(headers);
+                });
             });
         });
     });

@@ -1,5 +1,8 @@
 module.exports = {
     Annotation: {
+        ClientRecv: jest.fn(),
+        ClientSend: jest.fn(),
+        ServerRecv: jest.fn(),
         ServerSend: jest.fn(),
     },
     ExplicitContext: jest.fn(),

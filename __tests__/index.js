@@ -64,9 +64,15 @@ describe('Opentracing interface', () => {
             }).toThrowError();
         });
 
+        it('should not start a span without a kind being set', () => {
+            expect(() => {
+                tracer.startSpan('foo', {});
+            }).toThrowError();
+        });
+
         it('startSpan should start a span', () => {
             zipkinTracer.createRootId.mockImplementationOnce(() => 42);
-            tracer.startSpan('MyName');
+            tracer.startSpan('MyName', { kind: 'server' });
 
             // should do it in a scope
             expect(zipkinTracer.scoped).toHaveBeenCalled();
@@ -84,7 +90,7 @@ describe('Opentracing interface', () => {
         });
 
         it('should start a span with parent span', () => {
-            const parent = tracer.startSpan('ParentSpan');
+            const parent = tracer.startSpan('ParentSpan', { kind: 'server' });
             // Constructor of parent span
             expect(zipkinTracer.scoped).toHaveBeenCalled();
             zipkinTracer.scoped.mock.calls[0][0]();
@@ -94,7 +100,10 @@ describe('Opentracing interface', () => {
             expect(parent.id.traceId).toBeTruthy();
             expect(parent.id.parentId).toBeTruthy();
 
-            const child = tracer.startSpan('ChildSpan', { childOf: parent });
+            const child = tracer.startSpan('ChildSpan', {
+                childOf: parent,
+                kind: 'server',
+            });
             // Constructor of child span
             expect(zipkinTracer.scoped).toHaveBeenCalled();
             zipkinTracer.scoped.mock.calls[0][0]();
@@ -115,10 +124,10 @@ describe('Opentracing interface', () => {
         describe('span object', () => {
             let span;
             beforeEach(() => {
-                span = tracer.startSpan('Ponyfoo');
+                span = tracer.startSpan('Ponyfoo', { kind: 'client' });
 
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
-                zipkinTracer.scoped.mock.calls[0][0](); // TODO: move to inside mock with next tick function
+                zipkinTracer.scoped.mock.calls[0][0]();
                 zipkinTracer.scoped.mockReset();
                 zipkinTracer.recordAnnotation.mockReset();
             });
@@ -151,7 +160,9 @@ describe('Opentracing interface', () => {
             });
 
             it('should use the right id in log', () => {
-                const otherSpan = tracer.startSpan('Other Span');
+                const otherSpan = tracer.startSpan('Other Span', {
+                    kind: 'client',
+                });
 
                 zipkinTracer.scoped.mockReset();
                 zipkinTracer.setId.mockReset();
@@ -188,13 +199,41 @@ describe('Opentracing interface', () => {
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
                 zipkinTracer.scoped.mock.calls[0][0]();
 
-                // XXX: assert a more specific thing here based on whatsoever
-                expect(zipkin.Annotation.ServerSend).toHaveBeenCalled();
+                expect(zipkin.Annotation.ClientRecv).toHaveBeenCalled();
+                expect(zipkin.Annotation.ClientSend).toHaveBeenCalled();
                 expect(zipkinTracer.recordAnnotation).toHaveBeenCalled();
             });
 
+            it('should send the right annotations for client', () => {
+                span = tracer.startSpan('Ponyfoo', { kind: 'client' });
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+                expect(zipkin.Annotation.ClientRecv).toHaveBeenCalled();
+                span.finish();
+
+                zipkinTracer.scoped.mock.calls[1][0]();
+                expect(zipkin.Annotation.ClientSend).toHaveBeenCalled();
+                expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(2);
+            });
+
+            it('should send the right annotations for server', () => {
+                span = tracer.startSpan('Ponyfoo', { kind: 'server' });
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+                expect(zipkin.Annotation.ServerRecv).toHaveBeenCalled();
+                span.finish();
+
+                zipkinTracer.scoped.mock.calls[1][0]();
+                expect(zipkin.Annotation.ServerSend).toHaveBeenCalled();
+                expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(2);
+            });
+
             it('should use the right id in finish', () => {
-                const otherSpan = tracer.startSpan('Other Span');
+                const otherSpan = tracer.startSpan('Other Span', {
+                    kind: 'server',
+                });
 
                 zipkinTracer.scoped.mockReset();
                 zipkinTracer.setId.mockReset();
@@ -260,7 +299,7 @@ describe('Opentracing interface', () => {
         // not relevant for us
         describe('Text Map', () => {
             it('should throw an error, because it is unsupported', () => {
-                const span = tracer.startSpan('Span');
+                const span = tracer.startSpan('Span', { kind: 'server' });
 
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
                 zipkinTracer.scoped.mock.calls[0][0]();
@@ -285,7 +324,7 @@ describe('Opentracing interface', () => {
             });
 
             it('should throw without a carrier', () => {
-                const span = tracer.startSpan('Span');
+                const span = tracer.startSpan('Span', { kind: 'server' });
 
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
                 zipkinTracer.scoped.mock.calls[0][0]();
@@ -295,7 +334,7 @@ describe('Opentracing interface', () => {
             });
 
             it('should call the underlying method', () => {
-                const span = tracer.startSpan('Span');
+                const span = tracer.startSpan('Span', { kind: 'server' });
 
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
                 zipkinTracer.scoped.mock.calls[0][0]();
@@ -312,7 +351,7 @@ describe('Opentracing interface', () => {
         // not relevant for us
         describe('Binary', () => {
             it('should throw an error, because it is unsupported', () => {
-                const span = tracer.startSpan('Span');
+                const span = tracer.startSpan('Span', { kind: 'server' });
                 expect(() => {
                     const carrier = {};
                     tracer.inject(span, Tracer.FORMAT_BINARY, carrier);

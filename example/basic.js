@@ -27,7 +27,7 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
         }),
     });
 
-    const span = tracer.startSpan('My Span');
+    const span = tracer.startSpan('My Span', { kind: 'client' });
 
     setTimeout(() => {
         span.log({

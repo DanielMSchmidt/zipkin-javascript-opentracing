@@ -28,6 +28,18 @@ function makeOptional(val) {
     }
 }
 
+function getSendAnnotation(kind) {
+    return kind === 'server'
+        ? new Annotation.ServerSend()
+        : new Annotation.ClientSend();
+}
+
+function getReceiveAnnotation(kind) {
+    return kind === 'server'
+        ? new Annotation.ServerRecv()
+        : new Annotation.ClientRecv();
+}
+
 function SpanCreator({ tracer, serviceName }) {
     return class Span {
         getTraceId(options) {
@@ -63,12 +75,13 @@ function SpanCreator({ tracer, serviceName }) {
         constructor(spanName, options) {
             const id = this.getTraceId(options);
             this.id = id;
+            this.kind = options.kind;
 
             tracer.scoped(() => {
                 tracer.setId(id);
                 tracer.recordBinary('spanName', spanName);
                 tracer.recordServiceName(serviceName);
-                // XXX: Add receive type annotation^
+                tracer.recordAnnotation(getReceiveAnnotation(options.kind));
             });
         }
 
@@ -87,8 +100,7 @@ function SpanCreator({ tracer, serviceName }) {
             tracer.scoped(() => {
                 // make sure correct id is set
                 tracer.setId(this.id);
-                // XXX: find better annoation than default to ServerSend
-                tracer.recordAnnotation(new Annotation.ServerSend());
+                tracer.recordAnnotation(getSendAnnotation(this.kind));
             });
         }
     };
@@ -122,6 +134,13 @@ class Tracing {
             throw new Error(
                 `startSpan needs an operation name as string as first argument. 
                 For more details, please see https://github.com/opentracing/specification/blob/master/specification.md#start-a-new-span`
+            );
+        }
+
+        if (options.kind !== 'client' && options.kind !== 'server') {
+            throw new Error(
+                'startSpan needs a kind of "server" or "kind" set, was',
+                options.kind
             );
         }
 
