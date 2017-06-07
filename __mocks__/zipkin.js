@@ -8,10 +8,10 @@ module.exports = {
     ExplicitContext: jest.fn(),
     Tracer: jest.fn(() => ({
         createRootId: jest.fn(() => ({
-            traceId: 'traceId:' + new Date(),
-            parentId: 'parentId:' + new Date(),
-            spanId: 'spanId:' + new Date(),
-            sampled: 'sampled:' + new Date(),
+            traceId: 'traceId:' + new Date() + Math.random(),
+            parentId: 'parentId:' + new Date() + Math.random(),
+            spanId: 'spanId:' + new Date() + Math.random(),
+            sampled: 'sampled:' + new Date() + Math.random(),
         })),
         recordAnnotation: jest.fn(),
         recordBinary: jest.fn(),
