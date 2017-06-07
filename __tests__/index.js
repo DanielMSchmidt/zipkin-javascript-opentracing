@@ -124,12 +124,7 @@ describe('Opentracing interface', () => {
 
             // Uses TraceId to get a new TraceId
             const call = zipkin.TraceId.mock.calls[0][0];
-            expect(call.traceId).toEqual(parent.traceId);
-            expect(call.parentId).toEqual(parent.spanId);
-
-            // We cant assert on spanId of the child, because it is overwritten by the construction of TraceId
-            expect(child.id.traceId).toEqual(parent.traceId);
-            expect(child.id.parentId).toEqual(parent.spanId);
+            expect(call.parentId.present).toBeTruthy();
         });
 
         describe('span object', () => {

@@ -246,7 +246,25 @@ describe('mock', () => {
                 expect(carrier['X-B3-Sampled']).toBeDefined();
             });
 
-            it('should set the parentId');
+            it('should set the parentId', () => {
+                const parent = tracer.startSpan('ParentSpan', { kind: 'server' });
+                const child = tracer.startSpan('ChildSpan', {
+                    childOf: parent,
+                    kind: 'server',
+                });
+
+                const carrier = {};
+                tracer.inject(
+                    child,
+                    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                    carrier
+                );
+
+                expect(carrier['X-B3-TraceId']).toBeDefined();
+                expect(carrier['X-B3-SpanId']).toBeDefined();
+                expect(carrier['X-B3-ParentSpanId']).toBeDefined();
+                expect(carrier['X-B3-Sampled']).toBeDefined();
+            });
         });
 
         describe('extract', () => {
@@ -280,7 +298,38 @@ describe('mock', () => {
                 expect(json[0].traceId).toBe('30871be42b0fd4781');
                 expect(json[0].id.value).toBe('30871be42b0fd4782');
             });
-            it('should use the parentId of the given headers');
+            it('should use the parentId of the given headers', () => {
+                const previousHeaders = {
+                    'X-B3-TraceId': '30871be42b0fd4781',
+                    'X-B3-SpanId': '30871be42b0fd4782',
+                    'X-B3-ParentSpanId': '30871be42b0fd4783',
+                };
+
+                const span = tracer.extract(
+                    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                    previousHeaders
+                );
+
+                span.finish();
+
+                jest.runOnlyPendingTimers();
+
+                expect(mockFetch).toHaveBeenCalled();
+                const [
+                    endpoint,
+                    { method, body, headers },
+                ] = mockFetch.mock.calls[0];
+
+                expect(endpoint).toBe('http://localhost:9411/api/v1/spans');
+                expect(method).toBe('POST');
+                expect(Object.keys(headers)).toEqual(
+                    expect.arrayContaining(['Accept', 'Content-Type'])
+                );
+                const json = JSON.parse(body);
+                expect(json[0].traceId).toBe('30871be42b0fd4781');
+                expect(json[0].id.value).toBe('30871be42b0fd4782');
+                expect(json[0].parentId).toBe('30871be42b0fd4783');
+            });
         });
 
         describe('inject + extract', () => {
