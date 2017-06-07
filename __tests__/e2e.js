@@ -246,7 +246,25 @@ describe('mock', () => {
                 expect(carrier['X-B3-Sampled']).toBeDefined();
             });
 
-            it('should set the parentId');
+            it('should set the parentId', () => {
+                const parent = tracer.startSpan('ParentSpan', { kind: 'server' });
+                const child = tracer.startSpan('ChildSpan', {
+                    childOf: parent,
+                    kind: 'server',
+                });
+
+                const carrier = {};
+                tracer.inject(
+                    child,
+                    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+                    carrier
+                );
+
+                expect(carrier['X-B3-TraceId']).toBeDefined();
+                expect(carrier['X-B3-SpanId']).toBeDefined();
+                expect(carrier['X-B3-ParentSpanId']).toBeDefined();
+                expect(carrier['X-B3-Sampled']).toBeDefined();
+            });
         });
 
         describe('extract', () => {

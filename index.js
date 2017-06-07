@@ -62,9 +62,10 @@ function SpanCreator({ tracer, serviceName }) {
                 const parent = options.childOf;
 
                 return new TraceId({
-                    traceId: parent.traceId,
-                    parentId: parent.spanId,
+                    traceId: makeOptional(parent.traceId),
+                    parentId: makeOptional(parent.id.spanId),
                     spanId: randomTraceId(),
+                    sampled: parent.id.sampled,
                 });
             }
 
