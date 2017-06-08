@@ -38,3 +38,8 @@ All examples need to run zipkin on `"localhost:9411"`.
 
 To see how to use this library with only one service see `examples/basic`.
 You can run the example with `npm run example:basic`.
+
+### Advanced
+
+In order to see how different services may pick up spans and extend them, please see the advanced example at `examples/advanced`.
+You can run the example with `npm run example:advanced`.
