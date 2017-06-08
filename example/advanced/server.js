@@ -21,7 +21,10 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
     }),
   });
 
-  const span = tracer.startSpan('My server Span', { kind: 'server' });
+  const span = tracer.extract(
+    ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+    req.headers
+  );
 
   setTimeout(() => {
     span.log({

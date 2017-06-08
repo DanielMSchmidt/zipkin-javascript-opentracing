@@ -1,4 +1,5 @@
 const express = require('express');
+const fetch = require('node-fetch');
 const {
   BatchRecorder,
   Tracer,
@@ -21,7 +22,7 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
     }),
   });
 
-  const span = tracer.startSpan('My clinet Span', { kind: 'client' });
+  const span = tracer.startSpan('My Client Span', { kind: 'client' });
 
   setTimeout(() => {
     span.log({
@@ -30,11 +31,14 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
     });
   }, 100);
 
-  setTimeout(() => {
+  const headers = {};
+  tracer.inject(span, ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS, headers);
+  fetch('http://localhost:8082/', {
+    headers: headers,
+  }).then(() => {
     span.finish();
-  }, 200);
-
-  next();
+    next();
+  });
 });
 
 app.get('/', (req, res) => {
