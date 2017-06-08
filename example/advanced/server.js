@@ -1,0 +1,46 @@
+const express = require('express');
+const {
+  BatchRecorder,
+  Tracer,
+  Annotation,
+  ExplicitContext,
+} = require('zipkin');
+const { HttpLogger } = require('zipkin-transport-http');
+const opentracing = require('opentracing');
+const ZipkinJavascriptOpentracing = require('../../index');
+
+const app = express();
+
+app.use(function zipkinExpressMiddleware(req, res, next) {
+  const tracer = new ZipkinJavascriptOpentracing({
+    serviceName: 'My Server',
+    recorder: new BatchRecorder({
+      logger: new HttpLogger({
+        endpoint: 'http://localhost:9411/api/v1/spans',
+      }),
+    }),
+  });
+
+  const span = tracer.startSpan('My server Span', { kind: 'server' });
+
+  setTimeout(() => {
+    span.log({
+      statusCode: '200',
+      objectId: '42',
+    });
+  }, 100);
+
+  setTimeout(() => {
+    span.finish();
+  }, 200);
+
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.send(Date.now().toString());
+});
+
+app.listen(8082, () => {
+  console.log('Frontend listening on port 8082!');
+});

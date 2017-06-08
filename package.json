@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "example:basic": "node example/basic/index.js",
+    "example:advanced": "node example/advanced/index.js",
     "test": "jest"
   },
   "jest": {
