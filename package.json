@@ -4,7 +4,7 @@
   "description": "An opentracing implementation for zipkin",
   "main": "index.js",
   "scripts": {
-    "start": "node example/basic.js",
+    "example:basic": "node example/basic/index.js",
     "test": "jest"
   },
   "jest": {

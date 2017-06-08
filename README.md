@@ -29,3 +29,12 @@ Zipkin doesn't distinguish between logs and tags.
 
 We need to know if this is a server or client to set the right annotations.
 Therefore we need the kind attribute to be set.
+
+## Example
+
+All examples need to run zipkin on `"localhost:9411"`.
+
+### Basic
+
+To see how to use this library with only one service see `examples/basic`.
+You can run the example with `npm run example:basic`.
