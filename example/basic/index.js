@@ -9,12 +9,6 @@ const { HttpLogger } = require('zipkin-transport-http');
 const opentracing = require('opentracing');
 const ZipkinJavascriptOpentracing = require('../../index');
 
-const recorder = new BatchRecorder({
-  logger: new HttpLogger({
-    endpoint: 'http://localhost:9411/api/v1/spans',
-  }),
-});
-
 const app = express();
 
 app.use(function zipkinExpressMiddleware(req, res, next) {
