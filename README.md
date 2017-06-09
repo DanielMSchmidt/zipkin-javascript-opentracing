@@ -32,7 +32,13 @@ Therefore we need the kind attribute to be set.
 
 ## Example
 
-All examples need to run zipkin on `"localhost:9411"`.
+All examples need to run zipkin on `"localhost:9411"`. This is best achieved by a docker image.
+
+```bash
+docker run -d -p 9411:9411 openzipkin/zipkin
+```
+
+Is the best method to achieve this.
 
 ### Basic
 
