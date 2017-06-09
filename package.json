@@ -6,6 +6,8 @@
   "scripts": {
     "example:basic": "node example/basic/index.js",
     "example:advanced": "node example/advanced/index.js",
+    "dev-example:basic": "nodemon example/basic/index.js",
+    "dev-example:advanced": "nodemon example/advanced/index.js",
     "test": "jest"
   },
   "jest": {
@@ -40,6 +42,7 @@
   "devDependencies": {
     "express": "^4.15.3",
     "jest": "^20.0.4",
+    "nodemon": "^1.11.0",
     "opentracing": "^0.14.1",
     "zipkin": "^0.7.1",
     "zipkin-transport-http": "^0.7.1"
