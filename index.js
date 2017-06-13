@@ -9,8 +9,8 @@ const {
 
 const HttpHeaders = {
     TraceId: 'x-b3-traceid',
-    ParentSpanId: 'x-b3-spanid',
-    SpanId: 'x-b3-parentspanid',
+    ParentSpanId: 'x-b3-parentspanid',
+    SpanId: 'x-b3-spanid',
     Sampled: 'x-b3-sampled',
 };
 
@@ -44,14 +44,14 @@ function makeOptional(val) {
 }
 
 function getSendAnnotation(kind) {
-    console.log('getSendAnnotation', kind);
+    // console.log('getSendAnnotation', kind);
     return kind === 'server'
         ? new Annotation.ServerSend()
         : new Annotation.ClientSend();
 }
 
 function getReceiveAnnotation(kind) {
-    console.log('getReceiveAnnotation', kind);
+    // console.log('getReceiveAnnotation', kind);
     return kind === 'server'
         ? new Annotation.ServerRecv()
         : new Annotation.ClientRecv();
@@ -61,16 +61,15 @@ function SpanCreator({ tracer, serviceName }) {
     return class Span {
         getTraceId(options) {
             // construct from give traceId
-            if (typeof options.traceId === 'object') {
-                console.log(
-                    '[DEBUG] constructing from given traceId',
-                    options.traceId
-                );
+            if (
+                typeof options.traceId === 'object' &&
+                typeof options.traceId.spanId === 'string'
+            ) {
                 const { traceId, parentId, spanId, sampled } = options.traceId;
                 return new TraceId({
                     traceId: makeOptional(traceId),
                     parentId: makeOptional(parentId),
-                    spanId: makeOptional(spanId),
+                    spanId: spanId,
                     sampled: makeOptional(sampled),
                 });
             }
@@ -181,23 +180,10 @@ class Tracing {
             throw new Error('inject called without a carrier object');
         }
 
-        console.log('[DEBUG] inject called with', span);
-
-        span.id._traceId.ifPresent(traceId => {
-            carrier[HttpHeaders.TraceId] = traceId;
-        });
-
-        carrier[HttpHeaders.SpanId] = span.id._spanId;
-
-        span.id._parentId.ifPresent(psid => {
-            carrier[HttpHeaders.ParentSpanId] = psid;
-        });
-
-        span.id.sampled.ifPresent(sampled => {
-            carrier[HttpHeaders.Sampled] = sampled ? '1' : '0';
-        });
-
-        console.log('[DEBUG] inject set headers', carrier);
+        carrier[HttpHeaders.TraceId] = span.id.traceId;
+        carrier[HttpHeaders.SpanId] = span.id.spanId;
+        carrier[HttpHeaders.ParentSpanId] = span.id.parentId;
+        carrier[HttpHeaders.Sampled] = span.id.sampled.getOrElse('0');
     }
 
     extract(format, carrier) {
@@ -208,8 +194,6 @@ class Tracing {
         if (typeof carrier !== 'object') {
             throw new Error('extract called without a carrier');
         }
-
-        console.log('[DEBUG] extract called with', carrier);
 
         // XXX: no empty string here v
         // We should send the span name too
@@ -222,11 +206,6 @@ class Tracing {
                 sampled: carrier[HttpHeaders.Sampled],
             },
             kind: 'server', // This depends on what kind the send span is, we need to send that through
-        });
-
-        console.log('[DEBUG] extracted span', {
-            traceId: span.id.traceId.toString(),
-            spanId: span.id.spanId.toString(),
         });
 
         return span;

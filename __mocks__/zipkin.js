@@ -1,3 +1,62 @@
+const None = {
+    get type() {
+        return 'None';
+    },
+    map() {
+        return None;
+    },
+    ifPresent() {},
+    flatMap() {
+        return None;
+    },
+    getOrElse(f) {
+        if (f instanceof Function) {
+            return f();
+        } else {
+            return f;
+        }
+    },
+    equals(other) {
+        return other.type === 'None';
+    },
+    toString() {
+        return 'None';
+    },
+    get present() {
+        return false;
+    },
+};
+
+class Some {
+    constructor(value) {
+        this.value = value;
+    }
+    map(f) {
+        return new Some(f(this.value));
+    }
+    ifPresent(f) {
+        return this.map(f);
+    }
+    flatMap(f) {
+        return this.map(f).getOrElse(None);
+    }
+    getOrElse() {
+        return this.value;
+    }
+    equals(other) {
+        return other instanceof Some && other.value === this.value;
+    }
+    toString() {
+        return `Some(${this.value.toString()})`;
+    }
+    get present() {
+        return true;
+    }
+    get type() {
+        return 'Some';
+    }
+}
+
 module.exports = {
     Annotation: {
         ClientRecv: jest.fn(),
@@ -7,12 +66,14 @@ module.exports = {
     },
     ExplicitContext: jest.fn(),
     Tracer: jest.fn(() => ({
-        createRootId: jest.fn(() => ({
-            traceId: 'traceId:' + new Date() + Math.random(),
-            parentId: 'parentId:' + new Date() + Math.random(),
-            spanId: 'spanId:' + new Date() + Math.random(),
-            sampled: 'sampled:' + new Date() + Math.random(),
-        })),
+        createRootId: jest.fn(() => {
+            return {
+                traceId: new Some('traceId:' + new Date() + Math.random()),
+                parentId: new Some('parentId:' + new Date() + Math.random()),
+                spanId: 'spanId:' + new Date() + Math.random(),
+                sampled: new Some('sampled:' + new Date() + Math.random()),
+            };
+        }),
         recordAnnotation: jest.fn(),
         recordBinary: jest.fn(),
         recordServiceName: jest.fn(),

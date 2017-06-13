@@ -340,7 +340,7 @@ describe('Opentracing interface', () => {
                 }).toThrowErrorMatchingSnapshot();
             });
 
-            it('should call the underlying method', () => {
+            it('should set headers', () => {
                 const span = tracer.startSpan('Span', { kind: 'server' });
 
                 expect(zipkinTracer.scoped).toHaveBeenCalled();
@@ -349,9 +349,7 @@ describe('Opentracing interface', () => {
                 const carrier = { couldBe: 'anything request related' };
                 tracer.inject(span, Tracer.FORMAT_HTTP_HEADERS, carrier);
 
-                expect(
-                    zipkin.Request.addZipkinHeaders
-                ).toHaveBeenLastCalledWith({}, span.id);
+                expect(carrier['x-b3-spanid']).toBe(span.id.spanId);
             });
         });
 
@@ -408,9 +406,9 @@ describe('Opentracing interface', () => {
 
             it('should handle child spans correctly', () => {
                 const httpHeaders = {
-                    'X-B3-TraceId': 'myTraceId',
-                    'X-B3-SpanId': 'mySpanId',
-                    'X-B3-Sampled': '1',
+                    'x-b3-traceid': 'myTraceId',
+                    'x-b3-spanid': 'mySpanId',
+                    'x-b3-sampled': '1',
                 };
                 const span = tracer.extract(
                     Tracer.FORMAT_HTTP_HEADERS,
@@ -420,7 +418,7 @@ describe('Opentracing interface', () => {
                 zipkinTracer.scoped.mock.calls[0][0]();
 
                 expect(span.id.traceId.value).toBe('myTraceId');
-                expect(span.id.spanId.value).toBe('mySpanId');
+                expect(span.id.spanId).toBe('mySpanId');
                 expect(span.id.sampled.value).toBe('1');
                 expect(span.log).toBeInstanceOf(Function);
                 expect(span.finish).toBeInstanceOf(Function);
@@ -428,10 +426,10 @@ describe('Opentracing interface', () => {
 
             it('should handle parent spans correctly', () => {
                 const httpHeaders = {
-                    'X-B3-TraceId': 'myTraceId',
-                    'X-B3-SpanId': 'mySpanId',
-                    'X-B3-ParentSpanId': 'myParentSpanId',
-                    'X-B3-Sampled': '1',
+                    'x-b3-traceid': 'myTraceId',
+                    'x-b3-spanid': 'mySpanId',
+                    'x-b3-parentspanid': 'myParentSpanId',
+                    'x-b3-sampled': '1',
                 };
                 const span = tracer.extract(
                     Tracer.FORMAT_HTTP_HEADERS,
@@ -441,7 +439,7 @@ describe('Opentracing interface', () => {
                 zipkinTracer.scoped.mock.calls[0][0]();
 
                 expect(span.id.traceId.value).toBe('myTraceId');
-                expect(span.id.spanId.value).toBe('mySpanId');
+                expect(span.id.spanId).toBe('mySpanId');
                 expect(span.id.parentId.value).toBe('myParentSpanId');
                 expect(span.id.sampled.value).toBe('1');
                 expect(span.log).toBeInstanceOf(Function);
