@@ -1,6 +1,7 @@
 const opentracing = require('opentracing');
 const Tracer = require('../index');
 const zipkin = require('zipkin');
+const { option: { Some, None } } = zipkin;
 
 describe('Opentracing interface', () => {
     it('should fail to init tracer without a service name', () => {
@@ -454,6 +455,29 @@ describe('Opentracing interface', () => {
                 const carrier = {};
                 tracer.extract(Tracer.FORMAT_BINARY, carrier);
             }).toThrowErrorMatchingSnapshot();
+        });
+    });
+
+    describe('helpers', () => {
+        describe('makeOptional', () => {
+            let makeOptional;
+            beforeEach(() => {
+                makeOptional = Tracer.makeOptional;
+            });
+
+            it('should return none if null is given', () => {
+                expect(makeOptional(null).toString()).toBe('None');
+            });
+
+            it('should return some if something is given', () => {
+                expect(makeOptional(3).toString()).toBe('Some(3)');
+            });
+
+            it('should not fail on double call', () => {
+                expect(makeOptional(makeOptional(3)).toString()).toBe(
+                    'Some(3)'
+                );
+            });
         });
     });
 });
