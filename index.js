@@ -1,12 +1,18 @@
 const {
     Annotation,
     ExplicitContext,
-    HttpHeaders,
     Request,
     TraceId,
     option: { Some, None },
     Tracer,
 } = require('zipkin');
+
+const HttpHeaders = {
+    TraceId: 'x-b3-traceid',
+    ParentSpanId: 'x-b3-spanid',
+    SpanId: 'x-b3-parentspanid',
+    Sampled: 'x-b3-sampled',
+};
 
 // copied from https://github.com/openzipkin/zipkin-js/blob/master/packages/zipkin/src/tracer/randomTraceId.js
 function randomTraceId() {
@@ -21,6 +27,15 @@ function randomTraceId() {
 }
 
 function makeOptional(val) {
+    if (
+        val &&
+        typeof val.toString === 'function' &&
+        (val.toString().indexOf('Some') !== -1 ||
+            val.toString().indexOf('None') !== -1)
+    ) {
+        return val;
+    }
+
     if (val != null) {
         return new Some(val);
     } else {
@@ -29,12 +44,14 @@ function makeOptional(val) {
 }
 
 function getSendAnnotation(kind) {
+    console.log('getSendAnnotation', kind);
     return kind === 'server'
         ? new Annotation.ServerSend()
         : new Annotation.ClientSend();
 }
 
 function getReceiveAnnotation(kind) {
+    console.log('getReceiveAnnotation', kind);
     return kind === 'server'
         ? new Annotation.ServerRecv()
         : new Annotation.ClientRecv();
@@ -44,10 +61,11 @@ function SpanCreator({ tracer, serviceName }) {
     return class Span {
         getTraceId(options) {
             // construct from give traceId
-            if (
-                typeof options.traceId === 'object' &&
-                typeof options.traceId.spanId === 'string'
-            ) {
+            if (typeof options.traceId === 'object') {
+                console.log(
+                    '[DEBUG] constructing from given traceId',
+                    options.traceId
+                );
                 const { traceId, parentId, spanId, sampled } = options.traceId;
                 return new TraceId({
                     traceId: makeOptional(traceId),
@@ -163,12 +181,23 @@ class Tracing {
             throw new Error('inject called without a carrier object');
         }
 
-        const { headers } = Request.addZipkinHeaders({}, span.id);
-        // get rid of remains of Some
-        Object.entries(headers).forEach(
-            ([key, value]) => (headers[key] = value.value ? value.value : value)
-        );
-        Object.assign(carrier, headers);
+        console.log('[DEBUG] inject called with', span);
+
+        span.id._traceId.ifPresent(traceId => {
+            carrier[HttpHeaders.TraceId] = traceId;
+        });
+
+        carrier[HttpHeaders.SpanId] = span.id._spanId;
+
+        span.id._parentId.ifPresent(psid => {
+            carrier[HttpHeaders.ParentSpanId] = psid;
+        });
+
+        span.id.sampled.ifPresent(sampled => {
+            carrier[HttpHeaders.Sampled] = sampled ? '1' : '0';
+        });
+
+        console.log('[DEBUG] inject set headers', carrier);
     }
 
     extract(format, carrier) {
@@ -180,20 +209,34 @@ class Tracing {
             throw new Error('extract called without a carrier');
         }
 
+        console.log('[DEBUG] extract called with', carrier);
+
         // XXX: no empty string here v
-        return new this._Span('', {
+        // We should send the span name too
+        // TODO: take a look for span name here: https://github.com/openzipkin/zipkin-go-opentracing/blob/594640b9ef7e5c994e8d9499359d693c032d738c/propagation_ot.go#L26
+        const span = new this._Span('', {
             traceId: {
                 traceId: carrier[HttpHeaders.TraceId],
                 parentId: carrier[HttpHeaders.ParentSpanId],
                 spanId: carrier[HttpHeaders.SpanId],
                 sampled: carrier[HttpHeaders.Sampled],
             },
+            kind: 'server', // This depends on what kind the send span is, we need to send that through
         });
+
+        console.log('[DEBUG] extracted span', {
+            traceId: span.id.traceId.toString(),
+            spanId: span.id.spanId.toString(),
+        });
+
+        return span;
     }
 }
 
 Tracing.FORMAT_TEXT_MAP = 'FORMAT_TEXT_MAP';
 Tracing.FORMAT_HTTP_HEADERS = 'FORMAT_HTTP_HEADERS';
 Tracing.FORMAT_BINARY = 'FORMAT_BINARY';
+
+Tracing.makeOptional = makeOptional;
 
 module.exports = Tracing;

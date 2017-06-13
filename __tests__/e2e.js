@@ -247,7 +247,9 @@ describe('mock', () => {
             });
 
             it('should set the parentId', () => {
-                const parent = tracer.startSpan('ParentSpan', { kind: 'server' });
+                const parent = tracer.startSpan('ParentSpan', {
+                    kind: 'server',
+                });
                 const child = tracer.startSpan('ChildSpan', {
                     childOf: parent,
                     kind: 'server',
