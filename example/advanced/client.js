@@ -20,19 +20,41 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
             statusCode: '200',
             objectId: '42',
         });
+
         tracer.inject(
             span,
             ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
             headers
         );
 
-        fetch('http://localhost:8082/', {
-            headers: headers,
-        }).then(response => {
-            console.log('finish client');
-            span.finish();
-            next();
+        const preRequestSpan = tracer.startSpan('Pre Request', {
+            childOf: span,
         });
+
+        setTimeout(() => {
+            preRequestSpan.finish();
+
+            fetch('http://localhost:8082/', {
+                headers: headers,
+            }).then(response => {
+                const responseSpan = tracer.startSpan('Render Response', {
+                    childOf: span,
+                });
+
+                responseSpan.log({
+                    response: JSON.stringify(response),
+                });
+
+                setTimeout(() => {
+                    responseSpan.finish();
+                }, 100);
+
+                setTimeout(() => {
+                    span.finish();
+                    next();
+                }, 200);
+            });
+        }, 100);
     }, 100);
 });
 
