@@ -146,12 +146,13 @@ describe('mock', () => {
                         endpoint: 'http://localhost:9411/api/v1/spans',
                     }),
                 }),
+                kind: 'server',
             });
         });
 
         describe('startSpan', () => {
             it('should record a simple request', () => {
-                const span = tracer.startSpan('My Span', { kind: 'server' });
+                const span = tracer.startSpan('My Span');
                 span.finish();
 
                 jest.runOnlyPendingTimers();
@@ -186,7 +187,7 @@ describe('mock', () => {
             });
 
             it('should record logs', () => {
-                const span = tracer.startSpan('My Span', { kind: 'server' });
+                const span = tracer.startSpan('My Span');
                 span.log({
                     statusCode: '200',
                     objectId: '42',
@@ -232,7 +233,7 @@ describe('mock', () => {
 
         describe('inject', () => {
             it('should set every defined HTTP Header', () => {
-                const span = tracer.startSpan('My Span', { kind: 'server' });
+                const span = tracer.startSpan('My Span');
 
                 const carrier = {};
                 tracer.inject(
@@ -247,12 +248,9 @@ describe('mock', () => {
             });
 
             it('should set the parentId', () => {
-                const parent = tracer.startSpan('ParentSpan', {
-                    kind: 'server',
-                });
+                const parent = tracer.startSpan('ParentSpan');
                 const child = tracer.startSpan('ChildSpan', {
                     childOf: parent,
-                    kind: 'server',
                 });
 
                 const carrier = {};
@@ -345,15 +343,14 @@ describe('mock', () => {
                             endpoint: 'http://localhost:9411/api/v1/spans',
                         }),
                     }),
+                    kind: 'server',
                 });
                 zipkinTracer = tracer._zipkinTracer;
             });
 
             describe('HTTP Headers', () => {
                 it('should work with injecting and extracting in a row', () => {
-                    const span = tracer.startSpan('My Span', {
-                        kind: 'server',
-                    });
+                    const span = tracer.startSpan('My Span');
 
                     const headers = {};
                     tracer.inject(

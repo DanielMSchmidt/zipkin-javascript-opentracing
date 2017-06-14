@@ -43,28 +43,17 @@ function makeOptional(val) {
     }
 }
 
-function getSendAnnotation(kind) {
-    // console.log('getSendAnnotation', kind);
-    return kind === 'server'
-        ? new Annotation.ServerSend()
-        : new Annotation.ClientSend();
-}
-
-function getReceiveAnnotation(kind) {
-    // console.log('getReceiveAnnotation', kind);
-    return kind === 'server'
-        ? new Annotation.ServerRecv()
-        : new Annotation.ClientRecv();
-}
-
-function SpanCreator({ tracer, serviceName }) {
+function SpanCreator({ tracer, serviceName, kind }) {
     return class Span {
-        getTraceId(options) {
-            // construct from give traceId
-            if (
+        _constructedFromOutside(options) {
+            return (
                 typeof options.traceId === 'object' &&
                 typeof options.traceId.spanId === 'string'
-            ) {
+            );
+        }
+        _getTraceId(options) {
+            // construct from give traceId
+            if (this._constructedFromOutside(options)) {
                 const { traceId, parentId, spanId, sampled } = options.traceId;
                 return new TraceId({
                     traceId: makeOptional(traceId),
@@ -91,15 +80,19 @@ function SpanCreator({ tracer, serviceName }) {
         }
 
         constructor(spanName, options) {
-            const id = this.getTraceId(options);
+            const id = this._getTraceId(options);
             this.id = id;
-            this.kind = options.kind;
 
             tracer.scoped(() => {
                 tracer.setId(id);
                 spanName !== '' && tracer.recordBinary('spanName', spanName);
                 tracer.recordServiceName(serviceName);
-                tracer.recordAnnotation(getReceiveAnnotation(options.kind));
+
+                if (kind === 'client') {
+                    tracer.recordAnnotation(new Annotation.ClientSend());
+                } else {
+                    tracer.recordAnnotation(new Annotation.ServerRecv());
+                }
             });
         }
 
@@ -118,7 +111,12 @@ function SpanCreator({ tracer, serviceName }) {
             tracer.scoped(() => {
                 // make sure correct id is set
                 tracer.setId(this.id);
-                tracer.recordAnnotation(getSendAnnotation(this.kind));
+
+                if (kind === 'client') {
+                    tracer.recordAnnotation(new Annotation.ClientRecv());
+                } else {
+                    tracer.recordAnnotation(new Annotation.ServerSend());
+                }
             });
         }
     };
@@ -135,6 +133,12 @@ class Tracing {
             throw new Error('recorder option needs to be provided');
         }
 
+        if (options.kind !== 'client' && options.kind !== 'server') {
+            throw new Error(
+                'kind option needs to be provided as either "client" or "server"'
+            );
+        }
+
         this._serviceName = options.serviceName;
 
         this._zipkinTracer = new Tracer({
@@ -144,6 +148,7 @@ class Tracing {
         this._Span = SpanCreator({
             tracer: this._zipkinTracer,
             serviceName: this._serviceName,
+            kind: options.kind,
         });
     }
 
@@ -154,15 +159,6 @@ class Tracing {
                 For more details, please see https://github.com/opentracing/specification/blob/master/specification.md#start-a-new-span`
             );
         }
-
-        if (options.kind !== 'client' && options.kind !== 'server') {
-            throw new Error(
-                'startSpan needs a kind of "server" or "kind" set, was',
-                options.kind
-            );
-        }
-
-        // XXX: expect kind to be set
 
         return new this._Span(name, options);
     }
@@ -205,7 +201,6 @@ class Tracing {
                 spanId: carrier[HttpHeaders.SpanId],
                 sampled: carrier[HttpHeaders.Sampled],
             },
-            kind: 'server', // This depends on what kind the send span is, we need to send that through
         });
 
         return span;
@@ -216,6 +211,7 @@ Tracing.FORMAT_TEXT_MAP = 'FORMAT_TEXT_MAP';
 Tracing.FORMAT_HTTP_HEADERS = 'FORMAT_HTTP_HEADERS';
 Tracing.FORMAT_BINARY = 'FORMAT_BINARY';
 
+// For testing purposes
 Tracing.makeOptional = makeOptional;
 
 module.exports = Tracing;

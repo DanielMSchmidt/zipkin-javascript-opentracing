@@ -7,10 +7,11 @@ const app = express();
 const tracer = new ZipkinJavascriptOpentracing({
     serviceName: 'My Service',
     recorder,
+    kind: 'client',
 });
 
 app.use(function zipkinExpressMiddleware(req, res, next) {
-    const span = tracer.startSpan('My Span', { kind: 'client' });
+    const span = tracer.startSpan('My Span');
 
     setTimeout(() => {
         span.log({

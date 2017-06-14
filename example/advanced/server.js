@@ -6,32 +6,27 @@ const app = express();
 const tracer = new ZipkinJavascriptOpentracing({
     serviceName: 'My Server',
     recorder,
+    kind: 'server',
 });
 
 app.use(function zipkinExpressMiddleware(req, res, next) {
-    const span = tracer.extract(
+    console.log('server middleware start');
+    const context = tracer.extract(
         ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
         req.headers
     );
 
-    const child = tracer.startSpan('Server has Child', {
-        childOf: span,
-        kind: 'server',
-    });
+    const span = tracer.startSpan('Server Span', { childOf: context });
 
     setTimeout(() => {
         span.log({
             serverVisited: 'yes',
         });
-
-        child.log({
-            result: '42',
-        });
     }, 100);
 
     setTimeout(() => {
         console.log('finish server');
-        child.finish();
+        span.finish();
         next();
     }, 200);
 });

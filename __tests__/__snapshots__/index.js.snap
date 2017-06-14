@@ -14,6 +14,10 @@ exports[`Opentracing interface inject (serialize) HTTP Headers should throw with
 
 exports[`Opentracing interface inject (serialize) Text Map should throw an error, because it is unsupported 1`] = `"inject called with unsupported format"`;
 
+exports[`Opentracing interface should fail to init tracer with a malformed kind 1`] = `"kind option needs to be provided as either \\"client\\" or \\"server\\""`;
+
+exports[`Opentracing interface should fail to init tracer without a kind 1`] = `"kind option needs to be provided as either \\"client\\" or \\"server\\""`;
+
 exports[`Opentracing interface should fail to init tracer without a recorder 1`] = `"recorder option needs to be provided"`;
 
 exports[`Opentracing interface should fail to init tracer without a service name 1`] = `"serviceName option needs to be provided"`;

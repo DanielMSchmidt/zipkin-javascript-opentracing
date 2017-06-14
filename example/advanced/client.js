@@ -7,32 +7,33 @@ const app = express();
 const tracer = new ZipkinJavascriptOpentracing({
     serviceName: 'My Client',
     recorder,
+    kind: 'client',
 });
 
 app.use(function zipkinExpressMiddleware(req, res, next) {
-    const span = tracer.startSpan('My Client Span', { kind: 'client' });
-
+    console.log('client middleware start');
     setTimeout(() => {
+        const headers = {};
+        const span = tracer.startSpan('Client Span');
+
         span.log({
             statusCode: '200',
             objectId: '42',
         });
+        tracer.inject(
+            span,
+            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+            headers
+        );
+
+        fetch('http://localhost:8082/', {
+            headers: headers,
+        }).then(response => {
+            console.log('finish client');
+            span.finish();
+            next();
+        });
     }, 100);
-
-    const headers = {};
-    tracer.inject(
-        span,
-        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-        headers
-    );
-
-    fetch('http://localhost:8082/', {
-        headers: headers,
-    }).then(() => {
-        console.log('finish client');
-        span.finish();
-        next();
-    });
 });
 
 app.get('/', (req, res) => {

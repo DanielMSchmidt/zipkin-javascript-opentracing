@@ -11,6 +11,7 @@ Please see the examples in the `examples/` directory.
 ### injecting and ejecting
 
 We currently only support HTTP Headers. If you need your own mechanism, feel free to do a PR.
+Also we assume that you only inject the HTTP Headers once, otherwise we will send multiple `ClientSend` annotations for you.
 
 ### Flags
 
