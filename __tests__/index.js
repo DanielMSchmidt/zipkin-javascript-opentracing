@@ -345,9 +345,100 @@ describe('Opentracing interface', () => {
             });
 
             // TODO: supported tags: https://github.com/opentracing/specification/blob/master/semantic_conventions.md#span-tags-table
-            // XXX: find difference between tags and logs
-            it('should use the right id in setTags');
-            it('should setTags');
+            //       We might need to extend them in the future
+
+            it('should set tag with an ip address', () => {
+                span.setTag('peer.address', '128.167.178.4:5678');
+
+                // should do it in a scope
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(zipkin.Annotation.ServerAddr).toHaveBeenLastCalledWith({
+                    serviceName: 'MyService',
+                    host: new zipkin.InetAddress('128.167.178.4'),
+                    port: 5678,
+                });
+                expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
+            });
+
+            it('should set tag with an ip address with default port', () => {
+                span.setTag('peer.address', '128.167.178.4');
+
+                // should do it in a scope
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(zipkin.Annotation.ServerAddr).toHaveBeenLastCalledWith({
+                    serviceName: 'MyService',
+                    host: new zipkin.InetAddress('128.167.178.4'),
+                    port: 80,
+                });
+                expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
+            });
+
+            it('should fail set tag if key is not supported by opentracing', () => {
+                expect(() => {
+                    span.setTag('ponies', 42);
+
+                    // should do it in a scope
+                    expect(zipkinTracer.scoped).toHaveBeenCalled();
+                    zipkinTracer.scoped.mock.calls[0][0]();
+                }).toThrowErrorMatchingSnapshot();
+            });
+
+            it('should fail set tag if key is not supported by us', () => {
+                expect(() => {
+                    span.setTag('sampling.priority', 1);
+
+                    // should do it in a scope
+                    expect(zipkinTracer.scoped).toHaveBeenCalled();
+                    zipkinTracer.scoped.mock.calls[0][0]();
+                }).toThrowErrorMatchingSnapshot();
+            });
+
+            it('should fail set tag if key has wrong type of value', () => {
+                expect(() => {
+                    span.setTag('peer.address', 42);
+
+                    // should do it in a scope
+                    expect(zipkinTracer.scoped).toHaveBeenCalled();
+                    zipkinTracer.scoped.mock.calls[0][0]();
+                }).toThrowErrorMatchingSnapshot();
+            });
+
+            it('should set tag for address on client', () => {
+                // Set tracer
+                tracer = new Tracer({
+                    serviceName: 'MyService',
+                    recorder: {},
+                    kind: 'client',
+                });
+                zipkinTracer = tracer._zipkinTracer;
+                zipkinTracer.scoped.mockReset();
+
+                // Set span
+                span = tracer.startSpan('Ponyfoo');
+
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+                zipkinTracer.scoped.mockReset();
+                zipkinTracer.recordAnnotation.mockReset();
+
+                // Actual test
+                span.setTag('peer.address', '128.167.178.4:5678');
+
+                // should do it in a scope
+                expect(zipkinTracer.scoped).toHaveBeenCalled();
+                zipkinTracer.scoped.mock.calls[0][0]();
+
+                expect(zipkin.Annotation.ClientAddr).toHaveBeenLastCalledWith({
+                    serviceName: 'MyService',
+                    host: new zipkin.InetAddress('128.167.178.4'),
+                    port: 5678,
+                });
+                expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
+            });
         });
 
         it('should expose inject/extract formats', () => {

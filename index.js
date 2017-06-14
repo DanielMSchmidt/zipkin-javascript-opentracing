@@ -5,7 +5,10 @@ const {
     TraceId,
     option: { Some, None },
     Tracer,
+    InetAddress,
 } = require('zipkin');
+const availableTags = require('opentracing').Tags;
+const parseUrl = require('url').parse;
 
 const HttpHeaders = {
     TraceId: 'x-b3-traceid',
@@ -104,6 +107,53 @@ function SpanCreator({ tracer, serviceName, kind }) {
                 Object.entries(obj).map(([key, value]) => {
                     tracer.recordBinary(key, value);
                 });
+            });
+        }
+        setTag(key, value) {
+            if (!Object.values(availableTags).includes(key)) {
+                throw new Error(`OpenTracing does not support tag "${key}"`);
+            }
+
+            tracer.scoped(() => {
+                // make sure correct id is set
+                tracer.setId(this.id);
+
+                switch (key) {
+                    case availableTags.PEER_ADDRESS:
+                        if (typeof value !== 'string') {
+                            throw new Error(
+                                `Tag ${availableTags.PEER_ADDRESS} needs a string`
+                            );
+                        }
+
+                        const host = new InetAddress(value.split(':')[0]);
+                        const port = value.split(':')[1]
+                            ? parseInt(value.split(':')[1], 10)
+                            : 80;
+
+                        const url = parseUrl(value);
+                        const address = {
+                            serviceName,
+                            host: host,
+                            port: port,
+                        };
+
+                        if (kind === 'client') {
+                            tracer.recordAnnotation(
+                                new Annotation.ClientAddr(address)
+                            );
+                        } else {
+                            tracer.recordAnnotation(
+                                new Annotation.ServerAddr(address)
+                            );
+                        }
+                        break;
+
+                    default:
+                        throw new Error(
+                            `Unsupported tag "${key}" could not be set`
+                        );
+                }
             });
         }
 

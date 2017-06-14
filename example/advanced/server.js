@@ -1,6 +1,7 @@
 const express = require('express');
 const ZipkinJavascriptOpentracing = require('../../index');
 const { recorder } = require('../recorder');
+const availableTags = require('opentracing').Tags;
 
 const app = express();
 const tracer = new ZipkinJavascriptOpentracing({
@@ -17,6 +18,8 @@ app.use(function zipkinExpressMiddleware(req, res, next) {
     );
 
     const span = tracer.startSpan('Server Span', { childOf: context });
+
+    span.setTag(availableTags.PEER_ADDRESS, '127.0.0.1:8082');
 
     setTimeout(() => {
         span.log({
