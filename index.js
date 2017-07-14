@@ -88,7 +88,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
 
             tracer.scoped(() => {
                 tracer.setId(id);
-                spanName !== '' && tracer.recordBinary('spanName', spanName);
+                spanName !== '' && tracer.recordRpc(spanName);
                 tracer.recordServiceName(serviceName);
 
                 if (kind === 'client') {
@@ -205,7 +205,7 @@ class Tracing {
     startSpan(name, options = {}) {
         if (typeof name !== 'string') {
             throw new Error(
-                `startSpan needs an operation name as string as first argument. 
+                `startSpan needs an operation name as string as first argument.
                 For more details, please see https://github.com/opentracing/specification/blob/master/specification.md#start-a-new-span`
             );
         }
