@@ -88,7 +88,10 @@ function SpanCreator({ tracer, serviceName, kind }) {
 
             tracer.scoped(() => {
                 tracer.setId(id);
-                spanName !== '' && tracer.recordRpc(spanName);
+                if (spanName) {
+                    tracer.recordAnnotation(new Annotation.Rpc(spanName));
+                }
+
                 tracer.recordServiceName(serviceName);
 
                 if (kind === 'client') {

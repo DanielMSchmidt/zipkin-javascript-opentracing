@@ -85,6 +85,7 @@ module.exports = {
         ServerAddr: jest.fn(),
         ServerRecv: jest.fn(),
         ServerSend: jest.fn(),
+        Rpc: jest.fn(),
     },
     InetAddress,
     ExplicitContext: jest.fn(),

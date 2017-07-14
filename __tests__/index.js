@@ -112,8 +112,7 @@ describe('Opentracing interface', () => {
 
             expect(zipkinTracer.createRootId).toHaveBeenCalled();
             expect(zipkinTracer.setId).toHaveBeenCalledWith(42);
-            expect(zipkinTracer.recordBinary).toHaveBeenCalledWith(
-                'spanName',
+            expect(zipkin.Annotation.Rpc).toHaveBeenCalledWith(
                 'MyName'
             );
             expect(zipkinTracer.recordServiceName).toHaveBeenCalledWith(
@@ -163,7 +162,7 @@ describe('Opentracing interface', () => {
             zipkinTracer.scoped.mock.calls[0][0]();
 
             expect(zipkin.Annotation.ServerRecv).toHaveBeenCalled();
-            expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
+            expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(2);
         });
 
         it('should send a client send annotation if tracer is of kind client', () => {
@@ -181,7 +180,7 @@ describe('Opentracing interface', () => {
             zipkinTracer.scoped.mock.calls[0][0]();
 
             expect(zipkin.Annotation.ClientSend).toHaveBeenCalled();
-            expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
+            expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(2);
         });
 
         describe('span object', () => {

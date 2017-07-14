@@ -2838,15 +2838,15 @@ yargs@~3.10.0:
     decamelize "^1.0.0"
     window-size "0.1.0"
 
-zipkin-transport-http@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.7.1.tgz#639e3ea573f68d9dc4299716224bc80eb5c7b37e"
+zipkin-transport-http@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.7.2.tgz#6b8cd3598e0e5d00033be50a0d7a4922bc24a40e"
   dependencies:
     node-fetch "^1.5.3"
 
-zipkin@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.7.1.tgz#567f10c15775d72e606f29a840c84da3e215dc43"
+zipkin@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.7.2.tgz#ae3365c1caf6659ac2ae14d93443f183a522aa7f"
   dependencies:
     base64-js "^1.1.2"
     network-address "^1.1.0"

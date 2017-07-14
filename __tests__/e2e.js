@@ -154,8 +154,10 @@ describe('mock', () => {
             it('should record a simple request', () => {
                 const span = tracer.startSpan('My Span');
                 span.finish();
-
                 jest.runOnlyPendingTimers();
+                jest.runOnlyPendingTimers();
+                jest.runOnlyPendingTimers();
+
 
                 expect(mockFetch).toHaveBeenCalled();
                 const [
@@ -182,8 +184,8 @@ describe('mock', () => {
                     'My Service'
                 );
 
-                expect(json[0].binaryAnnotations.length).toBe(1);
-                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
+                expect(json[0].binaryAnnotations.length).toBe(0);
+                expect(json[0].name).toBe('My Span');
             });
 
             it('should record logs', () => {
@@ -221,13 +223,12 @@ describe('mock', () => {
                 expect(json[0].annotations[0].endpoint.serviceName).toBe(
                     'My Service'
                 );
-                expect(json[0].binaryAnnotations.length).toBe(3);
-                expect(json[0].binaryAnnotations[0].key).toBe('spanName');
-                expect(json[0].binaryAnnotations[0].value).toBe('My Span');
-                expect(json[0].binaryAnnotations[1].key).toBe('statusCode');
-                expect(json[0].binaryAnnotations[1].value).toBe('200');
-                expect(json[0].binaryAnnotations[2].key).toBe('objectId');
-                expect(json[0].binaryAnnotations[2].value).toBe('42');
+                expect(json[0].binaryAnnotations.length).toBe(2);
+                expect(json[0].binaryAnnotations[0].key).toBe('statusCode');
+                expect(json[0].binaryAnnotations[0].value).toBe('200');
+                expect(json[0].binaryAnnotations[1].key).toBe('objectId');
+                expect(json[0].binaryAnnotations[1].value).toBe('42');
+                expect(json[0].name).toBe('My Span');
             });
         });
 

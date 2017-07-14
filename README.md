@@ -54,6 +54,5 @@ You can run the example with `npm run example:advanced`.
 
 ## TODOS
 
-- [ ] set operation name correctly
 - [ ] be able to set sampler
 - [ ] investigate other easy win tags
