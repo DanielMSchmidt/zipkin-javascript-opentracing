@@ -1,6 +1,6 @@
 {
   "name": "zipkin-javascript-opentracing",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An opentracing implementation for zipkin",
   "main": "index.js",
   "scripts": {
