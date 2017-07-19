@@ -244,6 +244,10 @@ class Tracing {
             throw new Error('extract called without a carrier');
         }
 
+        if (!carrier[HttpHeaders.TraceId]) {
+            return null;
+        }
+
         // XXX: no empty string here v
         // We should send the span name too
         // TODO: take a look for span name here: https://github.com/openzipkin/zipkin-go-opentracing/blob/594640b9ef7e5c994e8d9499359d693c032d738c/propagation_ot.go#L26
