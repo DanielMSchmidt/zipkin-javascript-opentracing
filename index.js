@@ -8,7 +8,6 @@ const {
     InetAddress,
 } = require('zipkin');
 const availableTags = require('opentracing').Tags;
-const parseUrl = require('url').parse;
 
 const HttpHeaders = {
     TraceId: 'x-b3-traceid',
@@ -134,7 +133,6 @@ function SpanCreator({ tracer, serviceName, kind }) {
                             ? parseInt(value.split(':')[1], 10)
                             : 80;
 
-                        const url = parseUrl(value);
                         const address = {
                             serviceName,
                             host: host,
