@@ -571,17 +571,10 @@ describe('Opentracing interface', () => {
                 }).toThrowErrorMatchingSnapshot();
             });
 
-            it('should return a valid without http headers', () => {
+            it('should return null without http headers', () => {
                 expect(() => {
                     const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, {});
-                    expect(zipkinTracer.scoped).toHaveBeenCalled();
-                    zipkinTracer.scoped.mock.calls[0][0]();
-
-                    expect(span.id.traceId).toBeDefined();
-                    expect(span.id.spanId).toBeDefined();
-                    expect(span.id.sampled).toBeDefined();
-                    expect(span.log).toBeInstanceOf(Function);
-                    expect(span.finish).toBeInstanceOf(Function);
+                    expect(span).toBe(null);
                 }).not.toThrowError();
             });
 
