@@ -49,9 +49,3 @@ You can run the example with `npm run example:basic`.
 
 In order to see how different services may pick up spans and extend them, please see the advanced example at `examples/advanced`.
 You can run the example with `npm run example:advanced`.
-
-
-## TODOS
-
-- [ ] be able to set sampler
-- [ ] investigate other easy win tags
