@@ -3150,9 +3150,9 @@ zipkin-transport-http@^0.9.0:
   dependencies:
     node-fetch "^1.5.3"
 
-zipkin@^0.7.3:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.7.3.tgz#d2f0f8db7ab7824ab3957408488e139aeae7ce90"
+zipkin@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.9.0.tgz#ab993bade2c492017273f0330d450670bf0a01c7"
   dependencies:
     base64-js "^1.1.2"
     network-address "^1.1.0"
