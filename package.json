@@ -8,7 +8,9 @@
     "example:advanced": "node example/advanced/index.js",
     "dev-example:basic": "nodemon example/basic/index.js",
     "dev-example:advanced": "nodemon example/advanced/index.js",
-    "test": "jest"
+    "test": "jest",
+    "precommit": "lint-staged",
+    "fmt": "prettier **/*.{js,json,css} --write"
   },
   "jest": {
     "collectCoverage": true,
@@ -23,7 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/costacruise/zipkin-javascript-opentracing.git"
+    "url":
+      "git+ssh://git@github.com/costacruise/zipkin-javascript-opentracing.git"
   },
   "keywords": [
     "zipkin",
@@ -43,14 +46,21 @@
     "zipkin": ">=0.9.0",
     "zipkin-transport-http": ">=0.9.0"
   },
-  "homepage": "https://github.com/costacruise/zipkin-javascript-opentracing#readme",
+  "homepage":
+    "https://github.com/costacruise/zipkin-javascript-opentracing#readme",
   "devDependencies": {
     "coveralls": "^3.0.0",
     "express": "^4.16.2",
+    "husky": "^0.14.3",
     "jest": "^21.2.1",
+    "lint-staged": "^4.2.3",
     "nodemon": "^1.12.1",
     "opentracing": "*",
+    "prettier": "^1.7.4",
     "zipkin": ">=0.9.0",
     "zipkin-transport-http": ">=0.9.0"
+  },
+  "lint-staged": {
+    "*.{js,json,css}": ["prettier --write", "git add"]
   }
 }
