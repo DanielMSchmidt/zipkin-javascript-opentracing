@@ -1,5 +1,4 @@
-[![wercker status](https://app.wercker.com/status/3f93bfdfe9b3d664fd8f9f6f4aa3132f/m/ "wercker status")](https://app.wercker.com/project/byKey/3f93bfdfe9b3d664fd8f9f6f4aa3132f)
-# Zipkin-Javascript-Opentracing
+# Zipkin-Javascript-Opentracing [![Build Status](https://travis-ci.org/costacruise/zipkin-javascript-opentracing.svg?branch=master)](https://travis-ci.org/costacruise/zipkin-javascript-opentracing) [![Coverage Status](https://coveralls.io/repos/github/costacruise/zipkin-javascript-opentracing/badge.svg?branch=master)](https://coveralls.io/github/costacruise/zipkin-javascript-opentracing?branch=master)
 
 ## Installation
 
