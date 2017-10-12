@@ -3082,9 +3082,9 @@ yargs@~3.10.0:
     decamelize "^1.0.0"
     window-size "0.1.0"
 
-zipkin-transport-http@^0.7.3:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.7.3.tgz#e7caca8c1e927fd0321d45b0bfd996266387f420"
+zipkin-transport-http@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.9.0.tgz#112d86abd237a9bc900c0161135d51e3c7901eb8"
   dependencies:
     node-fetch "^1.5.3"
 
