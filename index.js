@@ -1,5 +1,6 @@
 const {
   Annotation,
+  BatchRecorder,
   ExplicitContext,
   Request,
   TraceId,
@@ -8,6 +9,7 @@ const {
   InetAddress,
   sampler
 } = require("zipkin");
+const { HttpLogger } = require("zipkin-transport-http");
 const availableTags = require("opentracing").Tags;
 
 const HttpHeaders = {
@@ -176,7 +178,21 @@ class Tracing {
     }
 
     if (typeof options.recorder !== "object") {
-      throw new Error("recorder option needs to be provided");
+      if (typeof options.endpoint !== "string") {
+        throw new Error("recorder or endpoint option needs to be provided");
+      }
+
+      if (options.endpoint.indexOf("http") === -1) {
+        throw new Error(
+          "recorder value needs to start with http:// or https://"
+        );
+      }
+
+      options.recorder = new BatchRecorder({
+        logger: new HttpLogger({
+          endpoint: options.endpoint + "/api/v1/spans"
+        })
+      });
     }
 
     if (options.kind !== "client" && options.kind !== "server") {

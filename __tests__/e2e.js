@@ -124,13 +124,195 @@ describe("mock", () => {
       });
     });
   });
+});
 
-  describe("zipkin-javascript-opentracing", () => {
+describe("zipkin-javascript-opentracing", () => {
+  let tracer;
+  beforeEach(() => {
+    mockFetch.mockReset();
+    tracer = new ZipkinJavascriptOpentracing({
+      serviceName: "My Service",
+      recorder: new BatchRecorder({
+        logger: new HttpLogger({
+          endpoint: "http://localhost:9411/api/v1/spans"
+        })
+      }),
+      kind: "server"
+    });
+  });
+
+  describe("startSpan", () => {
+    it("should record a simple request", () => {
+      const span = tracer.startSpan("My Span");
+      span.finish();
+      jest.runOnlyPendingTimers();
+      jest.runOnlyPendingTimers();
+      jest.runOnlyPendingTimers();
+
+      expect(mockFetch).toHaveBeenCalled();
+      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
+
+      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(method).toBe("POST");
+      expect(Object.keys(headers)).toEqual(
+        expect.arrayContaining(["Accept", "Content-Type"])
+      );
+      const json = JSON.parse(body);
+      expect(json.length).toBe(1);
+      expect(Object.keys(json[0])).toEqual([
+        "traceId",
+        "name",
+        "id",
+        "annotations",
+        "binaryAnnotations"
+      ]);
+      expect(json[0].annotations.length).toBe(2);
+      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
+
+      expect(json[0].binaryAnnotations.length).toBe(0);
+      expect(json[0].name).toBe("My Span");
+    });
+
+    it("should record logs", () => {
+      const span = tracer.startSpan("My Span");
+      span.log({
+        statusCode: "200",
+        objectId: "42"
+      });
+
+      span.finish();
+
+      jest.runOnlyPendingTimers();
+
+      expect(mockFetch).toHaveBeenCalled();
+      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
+
+      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(method).toBe("POST");
+      expect(Object.keys(headers)).toEqual(
+        expect.arrayContaining(["Accept", "Content-Type"])
+      );
+      const json = JSON.parse(body);
+      expect(json.length).toBe(1);
+      expect(Object.keys(json[0])).toEqual([
+        "traceId",
+        "name",
+        "id",
+        "annotations",
+        "binaryAnnotations"
+      ]);
+      expect(json[0].annotations.length).toBe(2);
+      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
+      expect(json[0].binaryAnnotations.length).toBe(2);
+      expect(json[0].binaryAnnotations[0].key).toBe("statusCode");
+      expect(json[0].binaryAnnotations[0].value).toBe("200");
+      expect(json[0].binaryAnnotations[1].key).toBe("objectId");
+      expect(json[0].binaryAnnotations[1].value).toBe("42");
+      expect(json[0].name).toBe("My Span");
+    });
+  });
+
+  describe("inject", () => {
+    it("should set every defined HTTP Header", () => {
+      const span = tracer.startSpan("My Span");
+
+      const carrier = {};
+      tracer.inject(
+        span,
+        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+        carrier
+      );
+
+      expect(carrier["x-b3-traceid"]).toBeDefined();
+      expect(carrier["x-b3-spanid"]).toBeDefined();
+      expect(carrier["x-b3-sampled"]).toBeDefined();
+    });
+
+    it("should set the parentId", () => {
+      const parent = tracer.startSpan("ParentSpan");
+      const child = tracer.startSpan("ChildSpan", {
+        childOf: parent
+      });
+
+      const carrier = {};
+      tracer.inject(
+        child,
+        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+        carrier
+      );
+
+      expect(carrier["x-b3-traceid"]).toBeDefined();
+      expect(carrier["x-b3-spanid"]).toBeDefined();
+      expect(carrier["x-b3-parentspanid"]).toBeDefined();
+      expect(carrier["x-b3-sampled"]).toBeDefined();
+    });
+  });
+
+  describe("extract", () => {
+    it("should use the span and trace id of the given headers", () => {
+      const previousHeaders = {
+        "x-b3-traceid": "30871be42b0fd4781",
+        "x-b3-spanid": "30871be42b0fd4782"
+      };
+
+      const span = tracer.extract(
+        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+        previousHeaders
+      );
+
+      span.finish();
+
+      jest.runOnlyPendingTimers();
+
+      expect(mockFetch).toHaveBeenCalled();
+      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
+
+      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(method).toBe("POST");
+      expect(Object.keys(headers)).toEqual(
+        expect.arrayContaining(["Accept", "Content-Type"])
+      );
+      const json = JSON.parse(body);
+      expect(json[0].traceId).toBe("30871be42b0fd4781");
+      expect(json[0].id).toBe("30871be42b0fd4782");
+    });
+    it("should use the parentId of the given headers", () => {
+      const previousHeaders = {
+        "x-b3-traceid": "30871be42b0fd4781",
+        "x-b3-spanid": "30871be42b0fd4782",
+        "x-b3-parentspanid": "30871be42b0fd4783"
+      };
+
+      const span = tracer.extract(
+        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+        previousHeaders
+      );
+
+      span.finish();
+
+      jest.runOnlyPendingTimers();
+
+      expect(mockFetch).toHaveBeenCalled();
+      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
+
+      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(method).toBe("POST");
+      expect(Object.keys(headers)).toEqual(
+        expect.arrayContaining(["Accept", "Content-Type"])
+      );
+      const json = JSON.parse(body);
+      expect(json[0].traceId).toBe("30871be42b0fd4781");
+      expect(json[0].id).toBe("30871be42b0fd4782");
+      expect(json[0].parentId).toBe("30871be42b0fd4783");
+    });
+  });
+
+  describe("inject + extract", () => {
     let tracer;
+    let zipkinTracer;
     beforeEach(() => {
-      mockFetch.mockReset();
       tracer = new ZipkinJavascriptOpentracing({
-        serviceName: "My Service",
+        serviceName: "MyService",
         recorder: new BatchRecorder({
           logger: new HttpLogger({
             endpoint: "http://localhost:9411/api/v1/spans"
@@ -138,231 +320,101 @@ describe("mock", () => {
         }),
         kind: "server"
       });
+      zipkinTracer = tracer._zipkinTracer;
     });
 
-    describe("startSpan", () => {
-      it("should record a simple request", () => {
-        const span = tracer.startSpan("My Span");
-        span.finish();
-        jest.runOnlyPendingTimers();
-        jest.runOnlyPendingTimers();
-        jest.runOnlyPendingTimers();
-
-        expect(mockFetch).toHaveBeenCalled();
-        const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
-
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
-        expect(method).toBe("POST");
-        expect(Object.keys(headers)).toEqual(
-          expect.arrayContaining(["Accept", "Content-Type"])
-        );
-        const json = JSON.parse(body);
-        expect(json.length).toBe(1);
-        expect(Object.keys(json[0])).toEqual([
-          "traceId",
-          "name",
-          "id",
-          "annotations",
-          "binaryAnnotations"
-        ]);
-        expect(json[0].annotations.length).toBe(2);
-        expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
-
-        expect(json[0].binaryAnnotations.length).toBe(0);
-        expect(json[0].name).toBe("My Span");
-      });
-
-      it("should record logs", () => {
-        const span = tracer.startSpan("My Span");
-        span.log({
-          statusCode: "200",
-          objectId: "42"
-        });
-
-        span.finish();
-
-        jest.runOnlyPendingTimers();
-
-        expect(mockFetch).toHaveBeenCalled();
-        const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
-
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
-        expect(method).toBe("POST");
-        expect(Object.keys(headers)).toEqual(
-          expect.arrayContaining(["Accept", "Content-Type"])
-        );
-        const json = JSON.parse(body);
-        expect(json.length).toBe(1);
-        expect(Object.keys(json[0])).toEqual([
-          "traceId",
-          "name",
-          "id",
-          "annotations",
-          "binaryAnnotations"
-        ]);
-        expect(json[0].annotations.length).toBe(2);
-        expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
-        expect(json[0].binaryAnnotations.length).toBe(2);
-        expect(json[0].binaryAnnotations[0].key).toBe("statusCode");
-        expect(json[0].binaryAnnotations[0].value).toBe("200");
-        expect(json[0].binaryAnnotations[1].key).toBe("objectId");
-        expect(json[0].binaryAnnotations[1].value).toBe("42");
-        expect(json[0].name).toBe("My Span");
-      });
-    });
-
-    describe("inject", () => {
-      it("should set every defined HTTP Header", () => {
+    describe("HTTP Headers", () => {
+      it("should work with injecting and extracting in a row", () => {
         const span = tracer.startSpan("My Span");
 
-        const carrier = {};
+        const headers = {};
         tracer.inject(
           span,
           ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-          carrier
+          headers
+        );
+        const newSpan = tracer.extract(
+          ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+          headers
         );
 
-        expect(carrier["x-b3-traceid"]).toBeDefined();
-        expect(carrier["x-b3-spanid"]).toBeDefined();
-        expect(carrier["x-b3-sampled"]).toBeDefined();
+        expect(newSpan.id.spanId).toEqual(span.id._spanId);
+        expect(newSpan.id.traceId).toEqual(span.id.traceId);
       });
 
-      it("should set the parentId", () => {
-        const parent = tracer.startSpan("ParentSpan");
-        const child = tracer.startSpan("ChildSpan", {
-          childOf: parent
-        });
+      it("should work with extracting and injecting in a row", () => {
+        const headers = {
+          "x-b3-sampled": "0",
+          "x-b3-spanid": "a07ee38e6b11dc0c1",
+          "x-b3-traceid": "a07ee38e6b11dc0c2",
+          "x-b3-parentspanid": "a07ee38e6b11dc0c3"
+        };
+        const span = tracer.extract(
+          ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
+          headers
+        );
 
-        const carrier = {};
+        const newHeaders = {};
         tracer.inject(
-          child,
+          span,
           ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-          carrier
+          newHeaders
         );
 
-        expect(carrier["x-b3-traceid"]).toBeDefined();
-        expect(carrier["x-b3-spanid"]).toBeDefined();
-        expect(carrier["x-b3-parentspanid"]).toBeDefined();
-        expect(carrier["x-b3-sampled"]).toBeDefined();
+        expect(newHeaders).toEqual(headers);
       });
     });
+  });
+});
 
-    describe("extract", () => {
-      it("should use the span and trace id of the given headers", () => {
-        const previousHeaders = {
-          "x-b3-traceid": "30871be42b0fd4781",
-          "x-b3-spanid": "30871be42b0fd4782"
-        };
-
-        const span = tracer.extract(
-          ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-          previousHeaders
-        );
-
-        span.finish();
-
-        jest.runOnlyPendingTimers();
-
-        expect(mockFetch).toHaveBeenCalled();
-        const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
-
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
-        expect(method).toBe("POST");
-        expect(Object.keys(headers)).toEqual(
-          expect.arrayContaining(["Accept", "Content-Type"])
-        );
-        const json = JSON.parse(body);
-        expect(json[0].traceId).toBe("30871be42b0fd4781");
-        expect(json[0].id).toBe("30871be42b0fd4782");
-      });
-      it("should use the parentId of the given headers", () => {
-        const previousHeaders = {
-          "x-b3-traceid": "30871be42b0fd4781",
-          "x-b3-spanid": "30871be42b0fd4782",
-          "x-b3-parentspanid": "30871be42b0fd4783"
-        };
-
-        const span = tracer.extract(
-          ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-          previousHeaders
-        );
-
-        span.finish();
-
-        jest.runOnlyPendingTimers();
-
-        expect(mockFetch).toHaveBeenCalled();
-        const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
-
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
-        expect(method).toBe("POST");
-        expect(Object.keys(headers)).toEqual(
-          expect.arrayContaining(["Accept", "Content-Type"])
-        );
-        const json = JSON.parse(body);
-        expect(json[0].traceId).toBe("30871be42b0fd4781");
-        expect(json[0].id).toBe("30871be42b0fd4782");
-        expect(json[0].parentId).toBe("30871be42b0fd4783");
-      });
-    });
-
-    describe("inject + extract", () => {
-      let tracer;
-      let zipkinTracer;
-      beforeEach(() => {
-        tracer = new ZipkinJavascriptOpentracing({
-          serviceName: "MyService",
-          recorder: new BatchRecorder({
-            logger: new HttpLogger({
-              endpoint: "http://localhost:9411/api/v1/spans"
-            })
-          }),
+describe("simplified setup", () => {
+  describe("endpoint", () => {
+    it("should throw an error if the endpoint doesnt start with http", () => {
+      expect(() => {
+        new ZipkinJavascriptOpentracing({
+          serviceName: "My Service",
+          endpoint: "localhost:9411",
           kind: "server"
         });
-        zipkinTracer = tracer._zipkinTracer;
+      }).toThrowErrorMatchingSnapshot();
+    });
+
+    it("should record a simple request", () => {
+      mockFetch.mockReset();
+      const tracer = new ZipkinJavascriptOpentracing({
+        serviceName: "My Service",
+        endpoint: "http://localhost:9411",
+        kind: "server"
       });
 
-      describe("HTTP Headers", () => {
-        it("should work with injecting and extracting in a row", () => {
-          const span = tracer.startSpan("My Span");
+      const span = tracer.startSpan("My Span");
+      span.finish();
+      jest.runOnlyPendingTimers();
+      jest.runOnlyPendingTimers();
+      jest.runOnlyPendingTimers();
 
-          const headers = {};
-          tracer.inject(
-            span,
-            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-            headers
-          );
-          const newSpan = tracer.extract(
-            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-            headers
-          );
+      expect(mockFetch).toHaveBeenCalled();
+      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-          expect(newSpan.id.spanId).toEqual(span.id._spanId);
-          expect(newSpan.id.traceId).toEqual(span.id.traceId);
-        });
+      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(method).toBe("POST");
+      expect(Object.keys(headers)).toEqual(
+        expect.arrayContaining(["Accept", "Content-Type"])
+      );
+      const json = JSON.parse(body);
+      expect(json.length).toBe(1);
+      expect(Object.keys(json[0])).toEqual([
+        "traceId",
+        "name",
+        "id",
+        "annotations",
+        "binaryAnnotations"
+      ]);
+      expect(json[0].annotations.length).toBe(2);
+      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
 
-        it("should work with extracting and injecting in a row", () => {
-          const headers = {
-            "x-b3-sampled": "0",
-            "x-b3-spanid": "a07ee38e6b11dc0c1",
-            "x-b3-traceid": "a07ee38e6b11dc0c2",
-            "x-b3-parentspanid": "a07ee38e6b11dc0c3"
-          };
-          const span = tracer.extract(
-            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-            headers
-          );
-
-          const newHeaders = {};
-          tracer.inject(
-            span,
-            ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-            newHeaders
-          );
-
-          expect(newHeaders).toEqual(headers);
-        });
-      });
+      expect(json[0].binaryAnnotations.length).toBe(0);
+      expect(json[0].name).toBe("My Span");
     });
   });
 });
