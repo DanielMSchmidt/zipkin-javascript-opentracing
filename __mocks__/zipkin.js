@@ -121,5 +121,8 @@ module.exports = {
     Sampled: "X-B3-Sampled",
     Flags: "X-B3-Flags"
   },
-  option: require("zipkin-option")
+  option: require("zipkin-option"),
+  sampler: {
+    alwaysSampler: jest.fn(() => true)
+  }
 };
