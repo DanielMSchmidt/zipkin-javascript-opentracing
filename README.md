@@ -5,7 +5,7 @@
 Run `npm install --save zipkin-javascript-opentracing` to install the library.
 
 For usage instructions, please see the examples in the [`examples/`](examples/) directory.
-There is a [basic](examples/basic/) example that shows how to use the tracer in the context of a single express server and there is an [advanced](examples/advanced/) example that shows how multiple services (express API and frontend) might interact and share a tracing context.
+There is a [basic](https://github.com/costacruise/zipkin-javascript-opentracing/tree/master/example/basic) example that shows how to use the tracer in the context of a single express server and there is an [advanced](https://github.com/costacruise/zipkin-javascript-opentracing/tree/master/example/advanced) example that shows how multiple services (express API and frontend) might interact and share a tracing context.
 
 ## Limitations
 
