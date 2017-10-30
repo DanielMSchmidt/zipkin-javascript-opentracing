@@ -25,7 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/costacruise/zipkin-javascript-opentracing.git"
+    "url":
+      "git+ssh://git@github.com/DanielMSchmidt/zipkin-javascript-opentracing.git"
   },
   "keywords": [
     "zipkin",
@@ -38,14 +39,16 @@
   "author": "Daniel Schmidt",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/costacruise/zipkin-javascript-opentracing/issues"
+    "url":
+      "https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/issues"
   },
   "peerDependencies": {
     "opentracing": "*",
     "zipkin": ">=0.9.0",
     "zipkin-transport-http": ">=0.9.0"
   },
-  "homepage": "https://github.com/costacruise/zipkin-javascript-opentracing#readme",
+  "homepage":
+    "https://github.com/DanielMSchmidt/zipkin-javascript-opentracing#readme",
   "devDependencies": {
     "coveralls": "^3.0.0",
     "express": "^4.16.2",
@@ -59,9 +62,6 @@
     "zipkin-transport-http": ">=0.9.0"
   },
   "lint-staged": {
-    "*.{js,json,css}": [
-      "prettier --write",
-      "git add"
-    ]
+    "*.{js,json,css}": ["prettier --write", "git add"]
   }
 }
