@@ -17,11 +17,13 @@ const {
   Annotation,
   BatchRecorder,
   ExplicitContext,
-  Tracer
+  Tracer,
+  jsonEncoder
 } = require("zipkin");
 const { HttpLogger } = require("zipkin-transport-http");
 const fetch = require("node-fetch");
 const opentracing = require("opentracing");
+const { JSON_V2 } = jsonEncoder;
 
 const ZipkinJavascriptOpentracing = require("../index");
 
@@ -38,7 +40,8 @@ describe("mock", () => {
         ctxImpl: new ExplicitContext(),
         recorder: new BatchRecorder({
           logger: new HttpLogger({
-            endpoint: "http://localhost:9411/api/v1/spans"
+            endpoint: "http://localhost:9411/api/v2/spans",
+            jsonEncoder: JSON_V2
           })
         })
       });
@@ -49,7 +52,7 @@ describe("mock", () => {
       it("should record a simple request", () => {
         tracer.scoped(() => {
           tracer.setId(tracer.createRootId());
-          tracer.recordServiceName("My Service");
+          tracer.recordServiceName("my service");
           tracer.recordBinary("spanName", "My Span");
           tracer.recordAnnotation(new Annotation.ServerSend());
         });
@@ -59,32 +62,32 @@ describe("mock", () => {
         expect(mockFetch).toHaveBeenCalled();
         const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+        expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
         expect(method).toBe("POST");
         expect(Object.keys(headers)).toEqual(
           expect.arrayContaining(["Accept", "Content-Type"])
         );
         const json = JSON.parse(body);
         expect(json.length).toBe(1);
-        expect(Object.keys(json[0])).toEqual([
-          "traceId",
-          "name",
-          "id",
-          "annotations",
-          "binaryAnnotations",
-          "timestamp",
-          "duration"
-        ]);
-        expect(json[0].annotations.length).toBe(1);
-        expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
-        expect(json[0].binaryAnnotations.length).toBe(1);
-        expect(json[0].binaryAnnotations[0].value).toBe("My Span");
+        expect(Object.keys(json[0])).toEqual(
+          expect.arrayContaining([
+            "traceId",
+            "id",
+            "kind",
+            "timestamp",
+            "duration",
+            "localEndpoint",
+            "tags"
+          ])
+        );
+        expect(json[0].localEndpoint.serviceName).toBe("my service");
+        expect(json[0].tags.spanName).toBe("My Span");
       });
 
       it("should record logs", () => {
         tracer.scoped(() => {
           tracer.setId(tracer.createRootId());
-          tracer.recordServiceName("My Service");
+          tracer.recordServiceName("my service");
           tracer.recordBinary("spanName", "My Span");
           tracer.recordBinary("statusCode", "200");
           tracer.recordBinary("objectId", "42");
@@ -96,31 +99,28 @@ describe("mock", () => {
         expect(mockFetch).toHaveBeenCalled();
         const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-        expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+        expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
         expect(method).toBe("POST");
         expect(Object.keys(headers)).toEqual(
           expect.arrayContaining(["Accept", "Content-Type"])
         );
         const json = JSON.parse(body);
         expect(json.length).toBe(1);
-        expect(Object.keys(json[0])).toEqual([
-          "traceId",
-          "name",
-          "id",
-          "annotations",
-          "binaryAnnotations",
-          "timestamp",
-          "duration"
-        ]);
-        expect(json[0].annotations.length).toBe(1);
-        expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
-        expect(json[0].binaryAnnotations.length).toBe(3);
-        expect(json[0].binaryAnnotations[0].key).toBe("spanName");
-        expect(json[0].binaryAnnotations[0].value).toBe("My Span");
-        expect(json[0].binaryAnnotations[1].key).toBe("statusCode");
-        expect(json[0].binaryAnnotations[1].value).toBe("200");
-        expect(json[0].binaryAnnotations[2].key).toBe("objectId");
-        expect(json[0].binaryAnnotations[2].value).toBe("42");
+        expect(Object.keys(json[0])).toEqual(
+          expect.arrayContaining([
+            "traceId",
+            "id",
+            "kind",
+            "timestamp",
+            "duration",
+            "localEndpoint",
+            "tags"
+          ])
+        );
+        expect(json[0].localEndpoint.serviceName).toBe("my service");
+        expect(json[0].tags.spanName).toBe("My Span");
+        expect(json[0].tags.statusCode).toBe("200");
+        expect(json[0].tags.objectId).toBe("42");
       });
     });
   });
@@ -131,10 +131,10 @@ describe("zipkin-javascript-opentracing", () => {
   beforeEach(() => {
     mockFetch.mockReset();
     tracer = new ZipkinJavascriptOpentracing({
-      serviceName: "My Service",
+      serviceName: "my service",
       recorder: new BatchRecorder({
         logger: new HttpLogger({
-          endpoint: "http://localhost:9411/api/v1/spans"
+          endpoint: "http://localhost:9411/api/v2/spans"
         })
       }),
       kind: "server"
@@ -152,25 +152,20 @@ describe("zipkin-javascript-opentracing", () => {
       expect(mockFetch).toHaveBeenCalled();
       const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
       expect(method).toBe("POST");
       expect(Object.keys(headers)).toEqual(
         expect.arrayContaining(["Accept", "Content-Type"])
       );
       const json = JSON.parse(body);
       expect(json.length).toBe(1);
-      expect(Object.keys(json[0])).toEqual([
-        "traceId",
-        "name",
-        "id",
-        "annotations",
-        "binaryAnnotations"
-      ]);
+      expect(Object.keys(json[0])).toEqual(
+        expect.arrayContaining(["traceId", "name", "id", "annotations"])
+      );
       expect(json[0].annotations.length).toBe(2);
-      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
+      expect(json[0].annotations[0].endpoint.serviceName).toBe("my service");
 
-      expect(json[0].binaryAnnotations.length).toBe(0);
-      expect(json[0].name).toBe("My Span");
+      expect(json[0].name).toBe("my span");
     });
 
     it("should record logs", () => {
@@ -187,28 +182,24 @@ describe("zipkin-javascript-opentracing", () => {
       expect(mockFetch).toHaveBeenCalled();
       const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
       expect(method).toBe("POST");
       expect(Object.keys(headers)).toEqual(
         expect.arrayContaining(["Accept", "Content-Type"])
       );
       const json = JSON.parse(body);
       expect(json.length).toBe(1);
-      expect(Object.keys(json[0])).toEqual([
-        "traceId",
-        "name",
-        "id",
-        "annotations",
-        "binaryAnnotations"
-      ]);
+      expect(Object.keys(json[0])).toEqual(
+        expect.arrayContaining(["traceId", "name", "id", "annotations"])
+      );
       expect(json[0].annotations.length).toBe(2);
-      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
+      expect(json[0].annotations[0].endpoint.serviceName).toBe("my service");
       expect(json[0].binaryAnnotations.length).toBe(2);
       expect(json[0].binaryAnnotations[0].key).toBe("statusCode");
       expect(json[0].binaryAnnotations[0].value).toBe("200");
       expect(json[0].binaryAnnotations[1].key).toBe("objectId");
       expect(json[0].binaryAnnotations[1].value).toBe("42");
-      expect(json[0].name).toBe("My Span");
+      expect(json[0].name).toBe("my span");
     });
   });
 
@@ -267,7 +258,7 @@ describe("zipkin-javascript-opentracing", () => {
       expect(mockFetch).toHaveBeenCalled();
       const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
       expect(method).toBe("POST");
       expect(Object.keys(headers)).toEqual(
         expect.arrayContaining(["Accept", "Content-Type"])
@@ -295,7 +286,7 @@ describe("zipkin-javascript-opentracing", () => {
       expect(mockFetch).toHaveBeenCalled();
       const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
       expect(method).toBe("POST");
       expect(Object.keys(headers)).toEqual(
         expect.arrayContaining(["Accept", "Content-Type"])
@@ -315,7 +306,7 @@ describe("zipkin-javascript-opentracing", () => {
         serviceName: "MyService",
         recorder: new BatchRecorder({
           logger: new HttpLogger({
-            endpoint: "http://localhost:9411/api/v1/spans"
+            endpoint: "http://localhost:9411/api/v2/spans"
           })
         }),
         kind: "server"
@@ -372,7 +363,7 @@ describe("simplified setup", () => {
     it("should throw an error if the endpoint doesnt start with http", () => {
       expect(() => {
         new ZipkinJavascriptOpentracing({
-          serviceName: "My Service",
+          serviceName: "my service",
           endpoint: "localhost:9411",
           kind: "server"
         });
@@ -382,7 +373,7 @@ describe("simplified setup", () => {
     it("should record a simple request", () => {
       mockFetch.mockReset();
       const tracer = new ZipkinJavascriptOpentracing({
-        serviceName: "My Service",
+        serviceName: "my service",
         endpoint: "http://localhost:9411",
         kind: "server"
       });
@@ -396,25 +387,27 @@ describe("simplified setup", () => {
       expect(mockFetch).toHaveBeenCalled();
       const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
 
-      expect(endpoint).toBe("http://localhost:9411/api/v1/spans");
+      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
       expect(method).toBe("POST");
       expect(Object.keys(headers)).toEqual(
         expect.arrayContaining(["Accept", "Content-Type"])
       );
       const json = JSON.parse(body);
       expect(json.length).toBe(1);
-      expect(Object.keys(json[0])).toEqual([
-        "traceId",
-        "name",
-        "id",
-        "annotations",
-        "binaryAnnotations"
-      ]);
-      expect(json[0].annotations.length).toBe(2);
-      expect(json[0].annotations[0].endpoint.serviceName).toBe("My Service");
+      expect(Object.keys(json[0])).toEqual(
+        expect.arrayContaining([
+          "traceId",
+          "id",
+          "name",
+          "kind",
+          "timestamp",
+          "duration",
+          "localEndpoint"
+        ])
+      );
 
-      expect(json[0].binaryAnnotations.length).toBe(0);
-      expect(json[0].name).toBe("My Span");
+      expect(json[0].localEndpoint.serviceName).toBe("my service");
+      expect(json[0].name).toBe("my span");
     });
   });
 });

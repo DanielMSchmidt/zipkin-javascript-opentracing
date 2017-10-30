@@ -124,5 +124,9 @@ module.exports = {
   option: require("zipkin-option"),
   sampler: {
     alwaysSampler: jest.fn(() => true)
+  },
+  jsonEncoder: {
+    JSON_V1: jest.fn(),
+    JSON_V2: jest.fn()
   }
 };
