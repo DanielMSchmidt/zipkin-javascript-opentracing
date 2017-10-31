@@ -11,6 +11,7 @@
     "dev-example:advanced": "nodemon example/advanced/index.js",
     "test": "jest",
     "precommit": "lint-staged",
+    "prepare": "npm run build",
     "fmt": "prettier **/*.{js,json,css} --write"
   },
   "jest": {
