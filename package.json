@@ -2,8 +2,9 @@
   "name": "zipkin-javascript-opentracing",
   "version": "1.1.0",
   "description": "An opentracing implementation for zipkin",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
+    "build": "babel src/index.js -d lib",
     "example:basic": "node example/basic/index.js",
     "example:advanced": "node example/advanced/index.js",
     "dev-example:basic": "nodemon example/basic/index.js",
@@ -50,6 +51,7 @@
   "homepage":
     "https://github.com/DanielMSchmidt/zipkin-javascript-opentracing#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "coveralls": "^3.0.0",
     "express": "^4.16.2",
     "husky": "^0.14.3",
