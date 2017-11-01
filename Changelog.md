@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+Issues arised with [`react-scripts` throwing an error that this library is not transpiled](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#npm-run-build-fails-to-minify). To fix it we introduced babel and now ship with a transpiled `lib/` folder
+
 ## 1.1.0
 - [PR#10](https://github.com/costacruise/zipkin-javascript-opentracing/pull/10) adding support for a more simplified setup:
 
