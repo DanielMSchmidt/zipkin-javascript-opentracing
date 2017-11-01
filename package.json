@@ -4,7 +4,7 @@
   "description": "An opentracing implementation for zipkin",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src/index.js -d lib",
+    "build": "babel src -d lib && rm -r lib/__tests__",
     "example:basic": "node example/basic/index.js",
     "example:advanced": "node example/advanced/index.js",
     "dev-example:basic": "nodemon example/basic/index.js",

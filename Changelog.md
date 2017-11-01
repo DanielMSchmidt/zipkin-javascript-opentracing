@@ -1,7 +1,8 @@
 # Changelog
 
 ## 1.3.0
-Update of `peerDependencies`, so that zipkin v2 schema is supported
+- Update of `peerDependencies`, so that zipkin v2 schema is supported
+- Fix babel transpilation directory
 
 ## 1.2.0
 Issues arised with [`react-scripts` throwing an error that this library is not transpiled](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#npm-run-build-fails-to-minify). To fix it we introduced babel and now ship with a transpiled `lib/` folder
