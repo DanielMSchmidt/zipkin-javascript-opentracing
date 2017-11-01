@@ -7,10 +7,12 @@ const {
   option: { Some, None },
   Tracer,
   InetAddress,
-  sampler
+  sampler,
+  jsonEncoder
 } = require("zipkin");
 const { HttpLogger } = require("zipkin-transport-http");
 const availableTags = require("opentracing").Tags;
+const { JSON_V2 } = jsonEncoder;
 
 const HttpHeaders = {
   TraceId: "x-b3-traceid",
@@ -190,7 +192,8 @@ class Tracing {
 
       options.recorder = new BatchRecorder({
         logger: new HttpLogger({
-          endpoint: options.endpoint + "/api/v1/spans"
+          endpoint: options.endpoint + "/api/v2/spans",
+          jsonEncoder: JSON_V2
         })
       });
     }
