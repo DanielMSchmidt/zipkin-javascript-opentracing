@@ -8,7 +8,7 @@
     "react-dom": "^16.0.0",
     "react-scripts": "^1.0.16",
     "zipkin": "^0.10.1",
-    "zipkin-javascript-opentracing": "file:../../",
+    "zipkin-javascript-opentracing": "file:../..",
     "zipkin-transport-http": "^0.10.1"
   },
   "scripts": {
