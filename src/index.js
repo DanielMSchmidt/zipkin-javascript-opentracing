@@ -21,7 +21,7 @@ const HttpHeaders = {
   Sampled: "x-b3-sampled"
 };
 
-// copied from https://github.com/openzipkin/zipkin-js/blob/master/packages/zipkin/src/tracer/randomTraceId.js
+// copied from https://github.com/openzipkin/zipkin-js/blob/08f86b63a5fd7ded60762f537be1845ede588ffa/packages/zipkin/src/tracer/randomTraceId.js
 function randomTraceId() {
   // === Generate a random 64-bit number in fixed-length hex format
   const digits = "0123456789abcdef";
