@@ -10,7 +10,7 @@ const getLastTrace = () =>
   fetch("http://localhost:9411/api/v2/traces")
     .then(res => res.json())
     .then(res => res[res.length - 1][0]);
-const wait = (time = 200) => new Promise(resolve => setTimeout(resolve, time));
+const wait = (time = 2000) => new Promise(resolve => setTimeout(resolve, time));
 
 describe("Basic", () => {
   describe("Setup", () => {
@@ -18,12 +18,17 @@ describe("Basic", () => {
       const response = await fetch("http://localhost:9411/api/v2/traces");
       expect(response.status).to.equal(200);
     });
+  });
 
-    it("should be able interact with the basic example", async () => {
-      const before = await getTraceAmount();
-
+  describe("Span", () => {
+    let before;
+    beforeEach(async () => {
+      before = await getTraceAmount();
       cy.visit("/");
       cy.get("#Basic").click();
+    });
+
+    it("should be able interact with the basic example", async () => {
       cy.get("#buttonLabel").should($p => {
         expect($p.first()).to.contain("Not-Pressed");
       });
@@ -36,19 +41,17 @@ describe("Basic", () => {
     });
 
     it("should be able to get the right span name", async () => {
-      cy.visit("/");
-      cy.get("#Basic").click();
       cy.get("#buttonLabel").should($p => {
         expect($p.first()).to.contain("Not-Pressed");
       });
       cy.get("#basicButton").click();
-      const trace = await getLastTrace();
 
       cy.get("#buttonLabel").should(async $p => {
         expect($p.first()).to.contain("Is-Pressed");
-        await wait(2000);
-        expect(trace.name).to.equal("firstspan");
       });
+      await wait();
+      const trace = await getLastTrace();
+      expect(trace.name).to.equal("firstspan");
     });
   });
 });
