@@ -21,14 +21,10 @@ describe("Basic", () => {
   });
 
   describe("Span", () => {
-    let before;
-    beforeEach(async () => {
-      before = await getTraceAmount();
+    it("should be able interact with the basic example", async () => {
+      const before = await getTraceAmount();
       cy.visit("/");
       cy.get("#Basic").click();
-    });
-
-    it("should be able interact with the basic example", async () => {
       cy.get("#buttonLabel").should($p => {
         expect($p.first()).to.contain("Not-Pressed");
       });
@@ -41,6 +37,8 @@ describe("Basic", () => {
     });
 
     it("should be able to get the right span name", async () => {
+      cy.visit("/");
+      cy.get("#Basic").click();
       cy.get("#buttonLabel").should($p => {
         expect($p.first()).to.contain("Not-Pressed");
       });
