@@ -43,8 +43,12 @@ describe("Basic", () => {
       });
       cy.get("#basicButton").click();
       const trace = await getLastTrace();
-      await wait();
-      expect(trace.name).to.equal("firstspan");
+
+      cy.get("#buttonLabel").should(async $p => {
+        expect($p.first()).to.contain("Is-Pressed");
+        await wait();
+        expect(trace.name).to.equal("firstspan");
+      });
     });
   });
 });
