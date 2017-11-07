@@ -46,7 +46,7 @@ describe("Basic", () => {
 
       cy.get("#buttonLabel").should(async $p => {
         expect($p.first()).to.contain("Is-Pressed");
-        await wait();
+        await wait(2000);
         expect(trace.name).to.equal("firstspan");
       });
     });
