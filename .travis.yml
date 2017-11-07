@@ -20,7 +20,6 @@ matrix:
       - yarn install
       - cd e2e-tests/react
       - yarn install
-      - ls -la node_modules/zipkin-javascript-opentracing/
       before_script:
       - yarn run build
       - docker run -d -p 9411:9411 openzipkin/zipkin
