@@ -10,6 +10,7 @@ const getLastTrace = () =>
   fetch("http://localhost:9411/api/v2/traces")
     .then(res => res.json())
     .then(res => res[res.length - 1][0]);
+const wait = (time = 200) => new Promise(resolve => setTimeout(resolve, time));
 
 describe("Basic", () => {
   describe("Setup", () => {
@@ -42,6 +43,7 @@ describe("Basic", () => {
       });
       cy.get("#basicButton").click();
       const trace = await getLastTrace();
+      await wait();
       expect(trace.name).to.equal("firstspan");
     });
   });
