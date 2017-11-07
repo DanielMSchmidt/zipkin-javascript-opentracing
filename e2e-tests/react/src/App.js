@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
-import { Basic } from "./screens";
+import { Basic, Log } from "./screens";
 
 class App extends Component {
   state = {
@@ -23,7 +23,10 @@ class App extends Component {
   render() {
     if (!this.state.screen) {
       return (
-        <div className="App">{this.renderScreenButton("Basic", Basic)}</div>
+        <ul>
+          <li className="App">{this.renderScreenButton("Basic", Basic)}</li>
+          <li className="App">{this.renderScreenButton("Log", Log)}</li>
+        </ul>
       );
     }
 
