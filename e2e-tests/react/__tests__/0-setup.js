@@ -10,7 +10,7 @@ describe("Setup", () => {
   });
 
   it("should be able to access zipkin", async () => {
-    const response = await fetch("http://localhost:9411/api/v2/traces");
+    const response = await fetch("http://localhost:9411/api/v1/traces");
     expect(response.status).toBe(200);
   });
 
