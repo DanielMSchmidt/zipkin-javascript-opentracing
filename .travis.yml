@@ -29,6 +29,7 @@ matrix:
         - CI=false
         - NODE_VERSION="8.7"
       before_install:
+      - docker run -d -p 9411:9411 openzipkin/zipkin
       - "export DISPLAY=:99.0"
       - "sh -e /etc/init.d/xvfb start"
       install:
@@ -37,7 +38,6 @@ matrix:
       - yarn install
       before_script:
       - yarn run build
-      - docker run -d -p 9411:9411 openzipkin/zipkin
       - ./node_modules/.bin/serve -p 3000 -s build & SERVER_PID=$!
       script:
       - yarn test
