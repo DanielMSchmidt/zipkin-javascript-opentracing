@@ -17,7 +17,8 @@ export default class BasicScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      pressed: false
+      pressed: false,
+      spanName: ""
     };
   }
 
@@ -27,7 +28,7 @@ export default class BasicScreen extends Component {
         <a
           id="basicButton"
           onClick={() => {
-            const span = tracer.startSpan("FirstSpan");
+            const span = tracer.startSpan(this.state.spanName);
             this.setState({ pressed: true });
             span.finish();
           }}
@@ -35,6 +36,15 @@ export default class BasicScreen extends Component {
           <span id="buttonLabel">
             {this.state.pressed ? "Is-Pressed" : "Not-Pressed"}
           </span>
+          <input
+            id="spanNameInput"
+            onChange={event =>
+              this.setState({
+                spanName: event.target.value
+              })
+            }
+            value={this.state.spanName}
+          />
         </a>
       </div>
     );
