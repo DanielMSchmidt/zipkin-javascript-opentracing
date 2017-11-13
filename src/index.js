@@ -21,6 +21,21 @@ const HttpHeaders = {
   Sampled: "x-b3-sampled"
 };
 
+const startSpanAnnotation = {
+  client: Annotation.ClientSend,
+  server: Annotation.ServerRecv
+};
+
+const addressAnnotation = {
+  client: Annotation.ClientAddr,
+  server: Annotation.ServerAddr
+};
+
+const finishSpanAnnotation = {
+  client: Annotation.ClientRecv,
+  server: Annotation.ServerSend
+};
+
 // copied from https://github.com/openzipkin/zipkin-js/blob/08f86b63a5fd7ded60762f537be1845ede588ffa/packages/zipkin/src/tracer/randomTraceId.js
 function randomTraceId() {
   // === Generate a random 64-bit number in fixed-length hex format
@@ -49,21 +64,6 @@ function makeOptional(val) {
     return None;
   }
 }
-
-const startSpanAnnotation = {
-  client: Annotation.ClientSend,
-  server: Annotation.ServerRecv
-};
-
-const addressAnnotation = {
-  client: Annotation.ClientAddr,
-  server: Annotation.ServerAddr
-};
-
-const finishSpanAnnotation = {
-  client: Annotation.ClientRecv,
-  server: Annotation.ServerSend
-};
 
 function SpanCreator({ tracer, serviceName, kind }) {
   return class Span {
