@@ -50,6 +50,21 @@ function makeOptional(val) {
   }
 }
 
+const startSpanAnnotation = {
+  client: Annotation.ClientSend,
+  server: Annotation.ServerRecv
+};
+
+const addressAnnotation = {
+  client: Annotation.ClientAddr,
+  server: Annotation.ServerAddr
+};
+
+const finishSpanAnnotation = {
+  client: Annotation.ClientRecv,
+  server: Annotation.ServerSend
+};
+
 function SpanCreator({ tracer, serviceName, kind }) {
   return class Span {
     _constructedFromOutside(options) {
@@ -97,12 +112,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
         }
 
         tracer.recordServiceName(serviceName);
-
-        if (kind === "client") {
-          tracer.recordAnnotation(new Annotation.ClientSend());
-        } else {
-          tracer.recordAnnotation(new Annotation.ServerRecv());
-        }
+        tracer.recordAnnotation(new startSpanAnnotation[kind]());
       });
     }
 
@@ -144,11 +154,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
               port: port
             };
 
-            if (kind === "client") {
-              tracer.recordAnnotation(new Annotation.ClientAddr(address));
-            } else {
-              tracer.recordAnnotation(new Annotation.ServerAddr(address));
-            }
+            tracer.recordAnnotation(new addressAnnotation[kind](address));
             break;
 
           default:
@@ -161,12 +167,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
       tracer.scoped(() => {
         // make sure correct id is set
         tracer.setId(this.id);
-
-        if (kind === "client") {
-          tracer.recordAnnotation(new Annotation.ClientRecv());
-        } else {
-          tracer.recordAnnotation(new Annotation.ServerSend());
-        }
+        tracer.recordAnnotation(new finishSpanAnnotation[kind]());
       });
     }
   };
