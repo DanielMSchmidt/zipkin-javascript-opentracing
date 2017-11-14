@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+* Add support for local spans through workaround. Waiting for
+  [zipkin-js#156](https://github.com/openzipkin/zipkin-js/pull/156) to be
+  merged.
+
 ## 1.3.0
 
 * Update of `peerDependencies`, so that zipkin v2 schema is supported
