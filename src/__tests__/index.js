@@ -70,6 +70,40 @@ describe("Opentracing interface", () => {
     expect(tracer.startSpan).toBeInstanceOf(Function);
   });
 
+  it("should be have kind server, client and local ", () => {
+    expect(() => {
+      new Tracer({
+        serviceName: "MyService",
+        recorder: {},
+        kind: "client"
+      });
+    }).not.toThrowError();
+
+    expect(() => {
+      new Tracer({
+        serviceName: "MyService",
+        recorder: {},
+        kind: "server"
+      });
+    }).not.toThrowError();
+
+    expect(() => {
+      new Tracer({
+        serviceName: "MyService",
+        recorder: {},
+        kind: "local"
+      });
+    }).not.toThrowError();
+
+    expect(() => {
+      new Tracer({
+        serviceName: "MyService",
+        recorder: {},
+        kind: "peter"
+      });
+    }).toThrowErrorMatchingSnapshot();
+  });
+
   it("should support 128bit trace Ids lengths");
 
   describe("spans", () => {

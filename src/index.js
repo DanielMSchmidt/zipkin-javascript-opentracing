@@ -23,16 +23,19 @@ const HttpHeaders = {
 
 const startSpanAnnotation = {
   client: Annotation.ClientSend,
+  local: Annotation.ClientSend, // waiting for local PR in zipkin to get merged
   server: Annotation.ServerRecv
 };
 
 const addressAnnotation = {
   client: Annotation.ClientAddr,
+  local: Annotation.ClientAddr, // waiting for local PR in zipkin to get merged
   server: Annotation.ServerAddr
 };
 
 const finishSpanAnnotation = {
   client: Annotation.ClientRecv,
+  local: Annotation.ClientRecv, // waiting for local PR in zipkin to get merged
   server: Annotation.ServerSend
 };
 
@@ -199,9 +202,13 @@ class Tracing {
       });
     }
 
-    if (options.kind !== "client" && options.kind !== "server") {
+    if (
+      options.kind !== "client" &&
+      options.kind !== "server" &&
+      options.kind !== "local"
+    ) {
       throw new Error(
-        'kind option needs to be provided as either "client" or "server"'
+        'kind option needs to be provided as either "local", "client" or "server"'
       );
     }
 
