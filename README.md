@@ -5,11 +5,11 @@
 Run `npm install --save zipkin-javascript-opentracing` to install the library.
 
 For usage instructions, please see the examples in the [`examples/`](examples/)
-directory. There is a
-[basic](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/tree/master/example/basic)
+directory. There is a [basic vanilly
+javascript](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/tree/master/examples/vanillajs/basic)
 example that shows how to use the tracer in the context of a single express
-server and there is an
-[advanced](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/tree/master/example/advanced)
+server and there is an [advanced vanilla
+javascript](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/tree/master/examples/vanillajs/advanced)
 example that shows how multiple services (express API and frontend) might
 interact and share a tracing context.
 
@@ -49,11 +49,12 @@ docker run -d -p 9411:9411 openzipkin/zipkin
 
 ### Basic
 
-To see how to use this library with only one service see `examples/basic`. You
-can run the example with `npm run example:basic`.
+To see how to use this library with only one service see
+`examples/vanillajs/basic`. You can run the example with `npm run
+example:basic`.
 
 ### Advanced
 
 In order to see how different services may pick up spans and extend them, please
-see the advanced example at `examples/advanced`. You can run the example with
-`npm run example:advanced`.
+see the advanced example at `examples/vaniallajs/advanced`. You can run the
+example with `npm run example:advanced`.
