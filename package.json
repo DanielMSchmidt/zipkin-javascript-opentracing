@@ -25,18 +25,6 @@
       }
     }
   },
-  "babel": {
-    "presets": [
-      [
-        "env",
-        {
-          "targets": {
-            "node": "3"
-          }
-        }
-      ]
-    ]
-  },
   "repository": {
     "type": "git",
     "url":
