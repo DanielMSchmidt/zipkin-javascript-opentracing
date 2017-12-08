@@ -56,6 +56,7 @@
     "url":
       "https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/issues"
   },
+  "files": ["lib/index.js"],
   "peerDependencies": {
     "opentracing": "*",
     "zipkin": ">=0.10.1",
