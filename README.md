@@ -30,7 +30,7 @@ They are currently not supported, feel free to do a PR.
 
 ### Follows From (zipkin)
 
-FollowsFrom is not supported by openTracing, as far as I understand it.
+FollowsFrom is not supported by openTracing, as far as I understand.
 
 ### Tags
 
