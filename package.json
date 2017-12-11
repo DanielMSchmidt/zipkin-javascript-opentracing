@@ -12,7 +12,7 @@
     "test": "jest",
     "precommit": "lint-staged",
     "prepare": "npm run build",
-    "fmt": "prettier **/*.{js,json,css,md} --write"
+    "fmt": "prettier '**/*.{js,json,css,md}' --write"
   },
   "jest": {
     "collectCoverage": true,
