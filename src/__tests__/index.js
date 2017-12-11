@@ -604,8 +604,9 @@ describe("Opentracing interface", () => {
           "x-b3-sampled": "1"
         };
         const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
-        expect(zipkinTracer.scoped).toHaveBeenCalled();
-        zipkinTracer.scoped.mock.calls[0][0]();
+        expect(zipkinTracer.scoped).not.toHaveBeenCalled();
+        expect(zipkinTracer.recordAnnotation).not.toHaveBeenCalled();
+        expect(zipkinTracer.recordServiceName).not.toHaveBeenCalled();
 
         expect(span.id.traceId.value).toBe("myTraceId");
         expect(span.id.spanId).toBe("mySpanId");
@@ -622,8 +623,9 @@ describe("Opentracing interface", () => {
           "x-b3-sampled": "1"
         };
         const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
-        expect(zipkinTracer.scoped).toHaveBeenCalled();
-        zipkinTracer.scoped.mock.calls[0][0]();
+        expect(zipkinTracer.scoped).not.toHaveBeenCalled();
+        expect(zipkinTracer.recordAnnotation).not.toHaveBeenCalled();
+        expect(zipkinTracer.recordServiceName).not.toHaveBeenCalled();
 
         expect(span.id.traceId.value).toBe("myTraceId");
         expect(span.id.spanId).toBe("mySpanId");

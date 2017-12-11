@@ -3,6 +3,7 @@ jest.useFakeTimers();
 
 let mockFetch = jest.fn();
 jest.mock("node-fetch", () => (endpoint, ...args) => {
+  console.log("CALLED");
   mockFetch(endpoint, ...args);
   return Promise.resolve({
     status: 202
@@ -267,7 +268,10 @@ describe("zipkin-javascript-opentracing", () => {
         previousHeaders
       );
 
-      span.finish();
+      const childSpan = tracer.startSpan("child", {
+        childOf: span
+      });
+      childSpan.finish();
 
       jest.runOnlyPendingTimers();
 
@@ -281,36 +285,7 @@ describe("zipkin-javascript-opentracing", () => {
       );
       const json = JSON.parse(body);
       expect(json[0].traceId).toBe("30871be42b0fd4781");
-      expect(json[0].id).toBe("30871be42b0fd4782");
-    });
-    it("should use the parentId of the given headers", () => {
-      const previousHeaders = {
-        "x-b3-traceid": "30871be42b0fd4781",
-        "x-b3-spanid": "30871be42b0fd4782",
-        "x-b3-parentspanid": "30871be42b0fd4783"
-      };
-
-      const span = tracer.extract(
-        ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
-        previousHeaders
-      );
-
-      span.finish();
-
-      jest.runOnlyPendingTimers();
-
-      expect(mockFetch).toHaveBeenCalled();
-      const [endpoint, { method, body, headers }] = mockFetch.mock.calls[0];
-
-      expect(endpoint).toBe("http://localhost:9411/api/v2/spans");
-      expect(method).toBe("POST");
-      expect(Object.keys(headers)).toEqual(
-        expect.arrayContaining(["Accept", "Content-Type"])
-      );
-      const json = JSON.parse(body);
-      expect(json[0].traceId).toBe("30871be42b0fd4781");
-      expect(json[0].id).toBe("30871be42b0fd4782");
-      expect(json[0].parentId).toBe("30871be42b0fd4783");
+      expect(json[0].parentId).toBe("30871be42b0fd4782");
     });
   });
 

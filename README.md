@@ -21,6 +21,9 @@ We currently only support HTTP Headers. If you need your own mechanism, feel
 free to do a PR. Also we assume that you only inject the HTTP Headers once,
 otherwise we will send multiple `ClientSend` annotations for you.
 
+Also you can only finish spans which were not extracted. If you like this
+behaviour to be different, please open an issue.
+
 ### Flags
 
 They are currently not supported, feel free to do a PR.
