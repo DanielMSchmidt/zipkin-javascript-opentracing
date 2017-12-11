@@ -276,7 +276,6 @@ class Tracing {
     // XXX: no empty string here v
     // We should send the span name too
     // TODO: take a look for span name here: https://github.com/openzipkin/zipkin-go-opentracing/blob/594640b9ef7e5c994e8d9499359d693c032d738c/propagation_ot.go#L26
-    console.log("EXTRACTING SPAN");
     const span = new this._Span("", {
       traceId: {
         traceId: carrier[HttpHeaders.TraceId],

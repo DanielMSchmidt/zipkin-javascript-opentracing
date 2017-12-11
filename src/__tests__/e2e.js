@@ -3,7 +3,6 @@ jest.useFakeTimers();
 
 let mockFetch = jest.fn();
 jest.mock("node-fetch", () => (endpoint, ...args) => {
-  console.log("CALLED");
   mockFetch(endpoint, ...args);
   return Promise.resolve({
     status: 202
