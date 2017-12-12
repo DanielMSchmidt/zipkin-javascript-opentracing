@@ -150,6 +150,19 @@ describe("Opentracing interface", () => {
       expect(zipkinTracer.recordServiceName).toHaveBeenCalledWith("MyService");
     });
 
+    it("should not fail with parent span set to null", () => {
+      const child = tracer.startSpan("ChildSpan", {
+        childOf: null,
+        kind: "server"
+      });
+      // Constructor of child span
+      expect(zipkinTracer.scoped).toHaveBeenCalled();
+      zipkinTracer.scoped.mock.calls[0][0]();
+      zipkinTracer.scoped.mockReset();
+
+      expect(zipkinTracer.createRootId).toHaveBeenCalled();
+    });
+
     it("should start a span with parent span", () => {
       const parent = tracer.startSpan("ParentSpan");
       // Constructor of parent span

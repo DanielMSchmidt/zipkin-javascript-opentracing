@@ -89,7 +89,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
       }
 
       // construct with parent
-      if (typeof options.childOf === "object") {
+      if (options.childOf !== null && typeof options.childOf === "object") {
         const parent = options.childOf;
 
         return new TraceId({
