@@ -1,3 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`simplified setup endpoint should throw an error if the endpoint doesnt start with http 1`] = `"recorder value needs to start with http:// or https://"`;
+exports[`simplified setup endpoint should throw an error if the endpoint doesnt start with http 1`] = `"endpoint value needs to start with http:// or https://"`;
