@@ -192,7 +192,7 @@ class Tracing {
 
       if (options.endpoint.indexOf("http") === -1) {
         throw new Error(
-          "recorder value needs to start with http:// or https://"
+          "endpoint value needs to start with http:// or https://"
         );
       }
 
