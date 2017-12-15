@@ -87,16 +87,19 @@ class Index extends React.Component {
               align="center"
               contents={[
                 {
-                  content: "Standard compatible implementation",
                   image: siteConfig.baseUrl + "img/opentracing.svg",
                   imageAlign: "top",
-                  title: "OpenTracing"
+                  title: "OpenTracing",
+                  content: `
+                    zipkin-javascript-opentracing provides a standard compatible implementation of opentracing.
+                    That way you can switch out your tracing backend with another one implementing this standard without the need to change too much code.
+                  `
                 },
                 {
-                  content: "Use Zipkin to trace your application",
                   image: siteConfig.baseUrl + "img/openzipkin.jpg",
                   imageAlign: "top",
-                  title: "Open Zipkin"
+                  title: "Open Zipkin",
+                  content: `Use Zipkin to trace your application, but still use the convenient opentracing API.`
                 }
               ]}
               layout="twoColumn"
