@@ -53,18 +53,18 @@
   "homepage":
     "https://github.com/DanielMSchmidt/zipkin-javascript-opentracing#readme",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "coveralls": "^3.0.0",
-    "express": "^4.16.2",
-    "husky": "^0.14.3",
-    "jest": "^21.2.1",
-    "lint-staged": "^4.3.0",
-    "nodemon": "^1.12.1",
-    "opentracing": "*",
-    "prettier": "^1.8.1",
-    "zipkin": ">=0.9.0",
-    "zipkin-transport-http": ">=0.9.0"
+    "babel-cli": "6.26.0",
+    "babel-preset-env": "1.6.1",
+    "coveralls": "3.0.0",
+    "express": "4.16.2",
+    "husky": "0.14.3",
+    "jest": "21.2.1",
+    "lint-staged": "4.3.0",
+    "nodemon": "1.12.1",
+    "opentracing": "0.14.1",
+    "prettier": "1.8.1",
+    "zipkin": "0.10.1",
+    "zipkin-transport-http": "0.10.1"
   },
   "lint-staged": {
     "*.{js,json,css,md}": ["prettier --write", "git add"]

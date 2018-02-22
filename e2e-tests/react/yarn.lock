@@ -848,7 +848,7 @@ babel-plugin-transform-strict-mode@^6.24.1:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
 
-babel-polyfill@^6.26.0:
+babel-polyfill@6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.26.0.tgz#379937abc67d7895970adc621f284cd966cf2153"
   dependencies:
@@ -1816,7 +1816,7 @@ currently-unhandled@^0.4.1:
   dependencies:
     array-find-index "^1.0.1"
 
-cypress@^1.0.3:
+cypress@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/cypress/-/cypress-1.0.3.tgz#ef3a8fbe72d6f69b2c02e384db405cc49c5773be"
   dependencies:
@@ -4514,7 +4514,7 @@ no-case@^2.2.0:
   dependencies:
     lower-case "^1.1.1"
 
-node-fetch@^1.0.1, node-fetch@^1.5.3, node-fetch@^1.7.3:
+node-fetch@1.7.3, node-fetch@^1.0.1, node-fetch@^1.5.3:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.3.tgz#980f6f72d85211a5347c6b2bc18c5b84c3eb47ef"
   dependencies:
@@ -4715,7 +4715,7 @@ openssl-self-signed-certificate@1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/openssl-self-signed-certificate/-/openssl-self-signed-certificate-1.1.6.tgz#9d3a4776b1a57e9847350392114ad2f915a83dd4"
 
-opentracing@^0.14.1:
+opentracing@0.14.1:
   version "0.14.1"
   resolved "https://registry.yarnpkg.com/opentracing/-/opentracing-0.14.1.tgz#40d278beea417660a35dd9d3ee76511ffa911dcd"
 
@@ -5492,7 +5492,7 @@ react-dev-utils@^4.2.1:
     strip-ansi "3.0.1"
     text-table "0.2.0"
 
-react-dom@^16.0.0:
+react-dom@16.0.0:
   version "16.0.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.0.0.tgz#9cc3079c3dcd70d4c6e01b84aab2a7e34c303f58"
   dependencies:
@@ -5505,7 +5505,7 @@ react-error-overlay@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-3.0.0.tgz#c2bc8f4d91f1375b3dad6d75265d51cd5eeaf655"
 
-react-scripts@^1.0.16:
+react-scripts@1.0.16:
   version "1.0.16"
   resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-1.0.16.tgz#0d3c7ec30925fb0017cd185b1056ee085065f92c"
   dependencies:
@@ -5548,7 +5548,7 @@ react-scripts@^1.0.16:
   optionalDependencies:
     fsevents "1.1.2"
 
-react@^16.0.0:
+react@16.0.0:
   version "16.0.0"
   resolved "https://registry.yarnpkg.com/react/-/react-16.0.0.tgz#ce7df8f1941b036f02b2cca9dbd0cb1f0e855e2d"
   dependencies:
@@ -5975,7 +5975,7 @@ serve-static@1.13.1:
     parseurl "~1.3.2"
     send "0.16.1"
 
-serve@^6.4.0:
+serve@6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/serve/-/serve-6.4.0.tgz#397d7c97c8b9ff728a41d9bd4a75db0d7ddad43e"
   dependencies:
@@ -7090,15 +7090,15 @@ yauzl@2.8.0:
     fd-slicer "~1.0.1"
 
 "zipkin-javascript-opentracing@file:../..":
-  version "1.3.3"
+  version "1.5.1"
 
-zipkin-transport-http@^0.10.1:
+zipkin-transport-http@0.10.1:
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.10.1.tgz#615e2bbb3150b3ec0885caf98f6ad013a62ae5bb"
   dependencies:
     node-fetch "^1.5.3"
 
-zipkin@^0.10.1:
+zipkin@0.10.1:
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.10.1.tgz#98d2472f897b6c532b02cb9f2866139399664036"
   dependencies:
