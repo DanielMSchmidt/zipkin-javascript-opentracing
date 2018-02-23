@@ -21,7 +21,7 @@
   "devDependencies": {
     "babel-polyfill": "6.26.0",
     "cypress": "1.4.2",
-    "node-fetch": "1.7.3",
+    "node-fetch": "2.0.0",
     "serve": "6.4.11"
   }
 }
