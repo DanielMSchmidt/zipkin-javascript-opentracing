@@ -62,7 +62,7 @@
     "lint-staged": "7.0.0",
     "nodemon": "1.17.1",
     "opentracing": "0.14.1",
-    "prettier": "1.11.0",
+    "prettier": "1.11.1",
     "zipkin": "0.10.1",
     "zipkin-transport-http": "0.10.1"
   },
