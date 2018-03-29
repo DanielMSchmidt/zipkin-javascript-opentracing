@@ -127,7 +127,7 @@ function SpanCreator({ tracer, serviceName, kind }) {
         tracer.setId(this.id);
 
         Object.entries(obj).map(([key, value]) => {
-          tracer.recordBinary(key, value);
+          tracer.recordBinary(key, typeof(value) !== 'string' ? JSON.stringify(value) : value);
         });
       });
     }
