@@ -127,7 +127,10 @@ function SpanCreator({ tracer, serviceName, kind }) {
         tracer.setId(this.id);
 
         Object.entries(obj).map(([key, value]) => {
-          tracer.recordBinary(key, typeof(value) !== 'string' ? JSON.stringify(value) : value);
+          tracer.recordBinary(
+            key,
+            typeof value !== "string" ? JSON.stringify(value) : value
+          );
         });
       });
     }
@@ -289,9 +292,9 @@ class Tracing {
   }
 }
 
-Tracing.FORMAT_TEXT_MAP = "FORMAT_TEXT_MAP";
-Tracing.FORMAT_HTTP_HEADERS = "FORMAT_HTTP_HEADERS";
-Tracing.FORMAT_BINARY = "FORMAT_BINARY";
+Tracing.FORMAT_TEXT_MAP = "text_map";
+Tracing.FORMAT_HTTP_HEADERS = "http_headers";
+Tracing.FORMAT_BINARY = "binary";
 
 // For testing purposes
 Tracing.makeOptional = makeOptional;
