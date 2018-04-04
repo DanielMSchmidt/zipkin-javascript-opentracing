@@ -6,7 +6,7 @@
     "opentracing": "0.14.1",
     "react": "16.3.1",
     "react-dom": "16.3.1",
-    "react-scripts": "1.1.2",
+    "react-scripts": "1.1.4",
     "zipkin": "0.10.1",
     "zipkin-javascript-opentracing": "file:../..",
     "zipkin-transport-http": "0.10.1"
