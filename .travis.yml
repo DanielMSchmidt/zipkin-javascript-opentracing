@@ -11,7 +11,6 @@ matrix:
       - yarn test
       after_script:
       - 'cat coverage/lcov.info | ./node_modules/.bin/coveralls'
-    
     # E2E Web
     - services:
       - docker
@@ -37,9 +36,5 @@ matrix:
         - NAME='Website'
       node_js: 8
       script:
-      - git config --global user.email "$GIT_USER@users.noreply.github.com"
-      - git config --global user.name "Daniel Schmidt"
-      - echo "machine github.com login $GIT_USER password $GITHUB_TOKEN" > ~/.netrc
-      - npm install
-      - cd website && npm install && GIT_USER=$GIT_USER npm run publish-gh-pages
+      - scripts/publish-website.sh
 
