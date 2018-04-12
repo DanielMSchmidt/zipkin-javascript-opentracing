@@ -16,7 +16,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "test:build": "serve -p 3000 -s build",
-    "test": "cypress run --record --key $CYPRESS_KEY"
+    "test": "cypress run"
   },
   "devDependencies": {
     "babel-polyfill": "6.26.0",
