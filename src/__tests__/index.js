@@ -1,7 +1,9 @@
 const opentracing = require("opentracing");
 const Tracer = require("../index");
 const zipkin = require("zipkin");
-const { option: { Some, None } } = zipkin;
+const {
+  option: { Some, None }
+} = zipkin;
 
 describe("Opentracing interface", () => {
   it("should fail to init tracer without a service name", () => {
@@ -412,24 +414,17 @@ describe("Opentracing interface", () => {
         expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
       });
 
-      it("should fail set tag if key is not supported by opentracing", () => {
-        expect(() => {
-          span.setTag("ponies", 42);
+      it("should set arbitrary key/value tags", () => {
+        span.setTag("ponies", 42);
 
-          // should do it in a scope
-          expect(zipkinTracer.scoped).toHaveBeenCalled();
-          zipkinTracer.scoped.mock.calls[0][0]();
-        }).toThrowErrorMatchingSnapshot();
-      });
-
-      it("should fail set tag if key is not supported by us", () => {
-        expect(() => {
-          span.setTag("sampling.priority", 1);
-
-          // should do it in a scope
-          expect(zipkinTracer.scoped).toHaveBeenCalled();
-          zipkinTracer.scoped.mock.calls[0][0]();
-        }).toThrowErrorMatchingSnapshot();
+        // should do it in a scope
+        expect(zipkinTracer.scoped).toHaveBeenCalled();
+        zipkinTracer.scoped.mock.calls[0][0]();
+        expect(zipkin.Annotation.BinaryAnnotation).toHaveBeenLastCalledWith(
+          "ponies",
+          42
+        );
+        expect(zipkinTracer.recordAnnotation).toHaveBeenCalledTimes(1);
       });
 
       it("should fail set tag if key has wrong type of value", () => {
