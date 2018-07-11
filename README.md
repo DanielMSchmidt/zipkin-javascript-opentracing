@@ -32,10 +32,6 @@ They are currently not supported, feel free to do a PR.
 
 FollowsFrom is not supported by openTracing, as far as I understand.
 
-### Tags
-
-Zipkin doesn't distinguish between logs and tags.
-
 ### Additional options for starting a span
 
 We need to know if this is a server or client to set the right annotations.
@@ -53,8 +49,7 @@ docker run -d -p 9411:9411 openzipkin/zipkin
 ### Basic
 
 To see how to use this library with only one service see
-`examples/vanillajs/basic`. You can run the example with `npm run
-example:basic`.
+`examples/vanillajs/basic`. You can run the example with `npm run example:basic`.
 
 ### Advanced
 
