@@ -132,14 +132,11 @@ function SpanCreator({ tracer, serviceName, kind }) {
       });
     }
     setTag(key, value) {
-      if (!Object.values(availableTags).includes(key)) {
-        throw new Error(`OpenTracing does not support tag "${key}"`);
-      }
-
       tracer.scoped(() => {
         // make sure correct id is set
         tracer.setId(this.id);
 
+        // some tags are treated specially by Zipkin
         switch (key) {
           case availableTags.PEER_ADDRESS:
             if (typeof value !== "string") {
@@ -162,8 +159,11 @@ function SpanCreator({ tracer, serviceName, kind }) {
             tracer.recordAnnotation(new addressAnnotation[kind](address));
             break;
 
+          // Otherwise, set arbitrary key/value tags using Zipkin binary annotations
           default:
-            throw new Error(`Unsupported tag "${key}" could not be set`);
+            tracer.recordAnnotation(
+              new Annotation.BinaryAnnotation(key, value)
+            );
         }
       });
     }
