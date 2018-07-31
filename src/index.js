@@ -12,6 +12,11 @@ const {
 } = require("zipkin");
 const { HttpLogger } = require("zipkin-transport-http");
 const availableTags = require("opentracing").Tags;
+const {
+  FORMAT_BINARY,
+  FORMAT_TEXT_MAP,
+  FORMAT_HTTP_HEADERS
+} = require("opentracing");
 const { JSON_V2 } = jsonEncoder;
 
 const HttpHeaders = {
@@ -289,9 +294,10 @@ class Tracing {
   }
 }
 
-Tracing.FORMAT_TEXT_MAP = "FORMAT_TEXT_MAP";
-Tracing.FORMAT_HTTP_HEADERS = "FORMAT_HTTP_HEADERS";
-Tracing.FORMAT_BINARY = "FORMAT_BINARY";
+// These values should match https://github.com/opentracing/opentracing-javascript/blob/master/src/constants.ts
+Tracing.FORMAT_TEXT_MAP = FORMAT_TEXT_MAP;
+Tracing.FORMAT_HTTP_HEADERS = FORMAT_HTTP_HEADERS;
+Tracing.FORMAT_BINARY = FORMAT_BINARY;
 
 // For testing purposes
 Tracing.makeOptional = makeOptional;
