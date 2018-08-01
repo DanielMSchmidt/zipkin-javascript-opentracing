@@ -79,6 +79,7 @@ class InetAddress {
 
 module.exports = {
   Annotation: {
+    BinaryAnnotation: jest.fn(),
     ClientAddr: jest.fn(),
     ClientRecv: jest.fn(),
     ClientSend: jest.fn(),

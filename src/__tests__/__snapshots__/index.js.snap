@@ -25,7 +25,3 @@ exports[`Opentracing interface should fail to init tracer without a recorder 1`]
 exports[`Opentracing interface should fail to init tracer without a service name 1`] = `"serviceName option needs to be provided"`;
 
 exports[`Opentracing interface spans span object should fail set tag if key has wrong type of value 1`] = `"Tag peer.address needs a string"`;
-
-exports[`Opentracing interface spans span object should fail set tag if key is not supported by opentracing 1`] = `"OpenTracing does not support tag \\"ponies\\""`;
-
-exports[`Opentracing interface spans span object should fail set tag if key is not supported by us 1`] = `"Unsupported tag \\"sampling.priority\\" could not be set"`;
