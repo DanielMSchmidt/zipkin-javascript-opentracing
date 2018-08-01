@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0
+
+* [Change carrier formats to be openzipkin ones](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/pull/72)
+
 ## 1.4.0
 
 * Add support for local spans through workaround. Waiting for
