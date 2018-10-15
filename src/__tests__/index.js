@@ -72,7 +72,7 @@ describe("Opentracing interface", () => {
     expect(tracer.startSpan).toBeInstanceOf(Function);
   });
 
-  it("should be have kind server, client and local ", () => {
+  it("should be have kind server, client and local", () => {
     expect(() => {
       new Tracer({
         serviceName: "MyService",
@@ -136,6 +136,16 @@ describe("Opentracing interface", () => {
       zipkinTracer.scoped.mock.calls[0][0]();
 
       expect(zipkinTracer.recordBinary).not.toHaveBeenCalled();
+    });
+
+    it("should expose the underlying tracer", () => {
+      const span = tracer.startSpan("my-span-name");
+      expect(span.tracer()).toBeDefined();
+    });
+
+    it("should expose the span context", () => {
+      const span = tracer.startSpan("my-span-name");
+      expect(span.context()).toBeDefined();
     });
 
     it("startSpan should start a span", () => {
@@ -611,16 +621,14 @@ describe("Opentracing interface", () => {
           "x-b3-spanid": "mySpanId",
           "x-b3-sampled": "1"
         };
-        const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
+        const spanCtx = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
         expect(zipkinTracer.scoped).not.toHaveBeenCalled();
         expect(zipkinTracer.recordAnnotation).not.toHaveBeenCalled();
         expect(zipkinTracer.recordServiceName).not.toHaveBeenCalled();
 
-        expect(span.id.traceId.value).toBe("myTraceId");
-        expect(span.id.spanId).toBe("mySpanId");
-        expect(span.id.sampled.value).toBe("1");
-        expect(span.log).toBeInstanceOf(Function);
-        expect(span.finish).toBeInstanceOf(Function);
+        expect(spanCtx.traceId.value).toBe("myTraceId");
+        expect(spanCtx.spanId).toBe("mySpanId");
+        expect(spanCtx.sampled.value).toBe("1");
       });
 
       it("should handle parent spans correctly", () => {
@@ -630,17 +638,15 @@ describe("Opentracing interface", () => {
           "x-b3-parentspanid": "myParentSpanId",
           "x-b3-sampled": "1"
         };
-        const span = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
+        const spanCtx = tracer.extract(Tracer.FORMAT_HTTP_HEADERS, httpHeaders);
         expect(zipkinTracer.scoped).not.toHaveBeenCalled();
         expect(zipkinTracer.recordAnnotation).not.toHaveBeenCalled();
         expect(zipkinTracer.recordServiceName).not.toHaveBeenCalled();
 
-        expect(span.id.traceId.value).toBe("myTraceId");
-        expect(span.id.spanId).toBe("mySpanId");
-        expect(span.id.parentId.value).toBe("myParentSpanId");
-        expect(span.id.sampled.value).toBe("1");
-        expect(span.log).toBeInstanceOf(Function);
-        expect(span.finish).toBeInstanceOf(Function);
+        expect(spanCtx.traceId.value).toBe("myTraceId");
+        expect(spanCtx.spanId).toBe("mySpanId");
+        expect(spanCtx.parentId.value).toBe("myParentSpanId");
+        expect(spanCtx.sampled.value).toBe("1");
       });
     });
 
