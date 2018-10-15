@@ -3,7 +3,7 @@ const {
   BatchRecorder,
   ExplicitContext,
   Request,
-  TraceId,
+  TraceId, // this is used as OpenTracing.SpanContext
   option: { Some, None },
   Tracer,
   InetAddress,
@@ -11,12 +11,9 @@ const {
   jsonEncoder
 } = require("zipkin");
 const { HttpLogger } = require("zipkin-transport-http");
-const availableTags = require("opentracing").Tags;
-const {
-  FORMAT_BINARY,
-  FORMAT_TEXT_MAP,
-  FORMAT_HTTP_HEADERS
-} = require("opentracing");
+const OpenTracing = require("opentracing");
+const availableTags = OpenTracing.Tags;
+const { FORMAT_BINARY, FORMAT_TEXT_MAP, FORMAT_HTTP_HEADERS } = OpenTracing;
 const { JSON_V2 } = jsonEncoder;
 
 const HttpHeaders = {
@@ -73,35 +70,35 @@ function makeOptional(val) {
   }
 }
 
-function SpanCreator({ tracer, serviceName, kind }) {
-  return class Span {
-    _constructedFromOutside(options) {
-      return (
-        typeof options.traceId === "object" &&
-        typeof options.traceId.spanId === "string"
-      );
-    }
+function SpanCreator({ otTracer, tracer, serviceName, kind, sampler }) {
+  return class Span extends OpenTracing.Span {
     _getTraceId(options) {
-      // construct from give traceId
-      if (this._constructedFromOutside(options)) {
-        const { traceId, parentId, spanId, sampled } = options.traceId;
-        return new TraceId({
-          traceId: makeOptional(traceId),
-          parentId: makeOptional(parentId),
-          spanId: spanId,
-          sampled: makeOptional(sampled)
-        });
-      }
-
       // construct with parent
-      if (options.childOf !== null && typeof options.childOf === "object") {
-        const parent = options.childOf;
+      // for "references" see: https://github.com/opentracing/opentracing-javascript/blob/d2c1c6a5a50439bd769d02c7f4638293db40140a/src/tracer.ts#L79-L93
+      const childOf =
+        options.references &&
+        options.references.find(
+          r => r.type() === OpenTracing.REFERENCE_CHILD_OF
+        );
+      const followsFrom =
+        options.references &&
+        options.references.find(
+          r => r.type() === OpenTracing.REFERENCE_FOLLOWS_FROM
+        );
+      const parent = childOf || followsFrom; // prefer "child-of" refs over "follows-from" refs as "parent"
+      const parentCtx = parent && parent.referencedContext();
+      if (parentCtx) {
+        // with newer zipkin version switch to:
+        // return tracer.scoped(() => {
+        //   tracer.setId(parentCtx);
+        //   return tracer.createChildId();
+        // });
 
         return new TraceId({
-          traceId: makeOptional(parent.id.traceId),
-          parentId: makeOptional(parent.id.spanId),
+          traceId: makeOptional(parentCtx.traceId),
+          parentId: makeOptional(parentCtx.spanId),
           spanId: randomTraceId(),
-          sampled: parent.id.sampled
+          sampled: makeOptional(parentCtx.sampled)
         });
       }
 
@@ -110,81 +107,99 @@ function SpanCreator({ tracer, serviceName, kind }) {
     }
 
     constructor(spanName, options) {
-      const id = this._getTraceId(options);
-      this.id = id;
+      super();
 
-      if (!this._constructedFromOutside(options)) {
-        tracer.scoped(() => {
-          tracer.setId(id);
-          if (spanName) {
-            tracer.recordAnnotation(new Annotation.Rpc(spanName));
-          }
+      this.id = this._getTraceId(options);
 
-          tracer.recordServiceName(serviceName);
-          tracer.recordAnnotation(new startSpanAnnotation[kind]());
-        });
-      }
-    }
-
-    log(obj = {}) {
       tracer.scoped(() => {
-        // make sure correct id is set
         tracer.setId(this.id);
-
-        Object.entries(obj).map(([key, value]) => {
-          tracer.recordBinary(key, value);
-        });
-      });
-    }
-    setTag(key, value) {
-      tracer.scoped(() => {
-        // make sure correct id is set
-        tracer.setId(this.id);
-
-        // some tags are treated specially by Zipkin
-        switch (key) {
-          case availableTags.PEER_ADDRESS:
-            if (typeof value !== "string") {
-              throw new Error(
-                `Tag ${availableTags.PEER_ADDRESS} needs a string`
-              );
-            }
-
-            const host = new InetAddress(value.split(":")[0]);
-            const port = value.split(":")[1]
-              ? parseInt(value.split(":")[1], 10)
-              : 80;
-
-            const address = {
-              serviceName,
-              host: host,
-              port: port
-            };
-
-            tracer.recordAnnotation(new addressAnnotation[kind](address));
-            break;
-
-          // Otherwise, set arbitrary key/value tags using Zipkin binary annotations
-          default:
-            tracer.recordAnnotation(
-              new Annotation.BinaryAnnotation(key, value)
-            );
+        if (spanName) {
+          tracer.recordAnnotation(new Annotation.Rpc(spanName));
         }
+
+        tracer.recordServiceName(serviceName);
+        tracer.recordAnnotation(new startSpanAnnotation[kind]());
       });
     }
 
-    finish() {
+    _tracer() {
+      return otTracer;
+    }
+    _context() {
+      return this.id;
+    }
+
+    // TODO: ??? _setOperationName(newName) { this._name = newName; }
+
+    // TODO: ??? _setBaggageItem(key, value) { this.context()._baggage[key] = value; }
+    // TODO: ??? _getBaggageItem(key) { return this.context()._baggage[key]; }
+
+    _addTags(tags) {
+      tracer.scoped(() => {
+        // make sure correct id is set
+        tracer.setId(this.id);
+
+        Object.entries(tags).map(([key, value]) => {
+          // some tags are treated specially by Zipkin
+          switch (key) {
+            case availableTags.PEER_ADDRESS:
+              if (typeof value !== "string") {
+                throw new Error(
+                  `Tag ${availableTags.PEER_ADDRESS} needs a string`
+                );
+              }
+
+              const host = new InetAddress(value.split(":")[0]);
+              const port = value.split(":")[1]
+                ? parseInt(value.split(":")[1], 10)
+                : 80;
+
+              const address = { serviceName, host, port };
+
+              tracer.recordAnnotation(new addressAnnotation[kind](address));
+              break;
+
+            // Otherwise, set arbitrary key/value tags using Zipkin binary annotations
+            default:
+              tracer.recordAnnotation(
+                new Annotation.BinaryAnnotation(key, value)
+              );
+          }
+        });
+      });
+    }
+
+    _log(fields, timestamp) {
+      tracer.scoped(() => {
+        // make sure correct id is set
+        tracer.setId(this.id);
+
+        if (fields) {
+          Object.entries(fields).map(([key, value]) => {
+            tracer.recordBinary(key, value);
+          });
+        }
+
+        // TODO: support for passed-in timestamp?
+      });
+    }
+
+    _finish(finishTime) {
       tracer.scoped(() => {
         // make sure correct id is set
         tracer.setId(this.id);
         tracer.recordAnnotation(new finishSpanAnnotation[kind]());
       });
+
+      // TODO: support for finishTime?
     }
   };
 }
 
-class Tracing {
+class Tracing extends OpenTracing.Tracer {
   constructor(options = {}) {
+    super();
+
     // serviceName: the name of the service monitored with this tracer
     if (typeof options.serviceName !== "string") {
       throw new Error("serviceName option needs to be provided");
@@ -228,6 +243,7 @@ class Tracing {
       recorder: options.recorder
     });
     this._Span = SpanCreator({
+      otTracer: this,
       tracer: this._zipkinTracer,
       serviceName: this._serviceName,
       kind: options.kind,
@@ -235,7 +251,7 @@ class Tracing {
     });
   }
 
-  startSpan(name, options = {}) {
+  _startSpan(name, options) {
     if (typeof name !== "string") {
       throw new Error(
         `startSpan needs an operation name as string as first argument.
@@ -246,8 +262,8 @@ class Tracing {
     return new this._Span(name, options);
   }
 
-  inject(span, format, carrier) {
-    if (typeof span !== "object") {
+  _inject(spanCtx, format, carrier) {
+    if (typeof spanCtx !== "object") {
       throw new Error("inject called without a span");
     }
 
@@ -259,13 +275,13 @@ class Tracing {
       throw new Error("inject called without a carrier object");
     }
 
-    carrier[HttpHeaders.TraceId] = span.id.traceId;
-    carrier[HttpHeaders.SpanId] = span.id.spanId;
-    carrier[HttpHeaders.ParentSpanId] = span.id.parentId;
-    carrier[HttpHeaders.Sampled] = span.id.sampled.getOrElse("0");
+    carrier[HttpHeaders.TraceId] = spanCtx.traceId;
+    carrier[HttpHeaders.SpanId] = spanCtx.spanId;
+    carrier[HttpHeaders.ParentSpanId] = spanCtx.parentId;
+    carrier[HttpHeaders.Sampled] = spanCtx.sampled.getOrElse("0");
   }
 
-  extract(format, carrier) {
+  _extract(format, carrier) {
     if (format !== Tracing.FORMAT_HTTP_HEADERS) {
       throw new Error("extract called with unsupported format");
     }
@@ -278,19 +294,12 @@ class Tracing {
       return null;
     }
 
-    // XXX: no empty string here v
-    // We should send the span name too
-    // TODO: take a look for span name here: https://github.com/openzipkin/zipkin-go-opentracing/blob/594640b9ef7e5c994e8d9499359d693c032d738c/propagation_ot.go#L26
-    const span = new this._Span("", {
-      traceId: {
-        traceId: carrier[HttpHeaders.TraceId],
-        parentId: carrier[HttpHeaders.ParentSpanId],
-        spanId: carrier[HttpHeaders.SpanId],
-        sampled: carrier[HttpHeaders.Sampled]
-      }
+    return new TraceId({
+      traceId: makeOptional(carrier[HttpHeaders.TraceId]),
+      parentId: makeOptional(carrier[HttpHeaders.ParentSpanId]),
+      spanId: carrier[HttpHeaders.SpanId],
+      sampled: makeOptional(carrier[HttpHeaders.Sampled])
     });
-
-    return span;
   }
 }
 

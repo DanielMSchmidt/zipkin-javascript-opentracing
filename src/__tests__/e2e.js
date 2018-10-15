@@ -314,13 +314,13 @@ describe("zipkin-javascript-opentracing", () => {
           ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
           headers
         );
-        const newSpan = tracer.extract(
+        const newSpanCtx = tracer.extract(
           ZipkinJavascriptOpentracing.FORMAT_HTTP_HEADERS,
           headers
         );
 
-        expect(newSpan.id.spanId).toEqual(span.id._spanId);
-        expect(newSpan.id.traceId).toEqual(span.id.traceId);
+        expect(newSpanCtx.spanId).toEqual(span.id._spanId);
+        expect(newSpanCtx.traceId).toEqual(span.id.traceId);
       });
 
       it("should work with extracting and injecting in a row", () => {

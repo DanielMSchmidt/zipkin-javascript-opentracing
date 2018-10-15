@@ -1,0 +1,16 @@
+# see: http://editorconfig.org/
+
+# stop searching for .editorconfig in parent folders
+root = true
+
+trim_trailing_whitespace = true
+insert_final_newline     = true
+end_of_line              = lf
+
+[*.{js,json}]
+indent_style = space
+indent_size  = 2
+
+[package.json]
+indent_style = space
+indent_size  = 2
