@@ -2,7 +2,6 @@ const {
   Annotation,
   BatchRecorder,
   ExplicitContext,
-  Request,
   TraceId,
   option: { Some, None },
   Tracer,
@@ -219,19 +218,20 @@ class Tracing {
       );
     }
 
-    options.sampler = options.sampler || sampler.alwaysSample;
+    options.sampler =
+      options.sampler || new sampler.Sampler(sampler.alwaysSample);
 
     this._serviceName = options.serviceName;
 
     this._zipkinTracer = new Tracer({
       ctxImpl: new ExplicitContext(),
-      recorder: options.recorder
+      recorder: options.recorder,
+      sampler: options.sampler
     });
     this._Span = SpanCreator({
       tracer: this._zipkinTracer,
       serviceName: this._serviceName,
-      kind: options.kind,
-      sampler: options.sampler
+      kind: options.kind
     });
   }
 
