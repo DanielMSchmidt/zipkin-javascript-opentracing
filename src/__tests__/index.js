@@ -2,7 +2,7 @@ const opentracing = require("opentracing");
 const Tracer = require("../index");
 const zipkin = require("zipkin");
 const {
-  option: { Some, None }
+  sampler: { Sampler }
 } = zipkin;
 
 describe("Opentracing interface", () => {
@@ -494,7 +494,8 @@ describe("Opentracing interface", () => {
 
       expect(zipkin.Tracer).toHaveBeenCalledWith({
         ctxImpl: {},
-        recorder: { id: 42 }
+        recorder: { id: 42 },
+        sampler: expect.any(Sampler)
       });
     });
   });

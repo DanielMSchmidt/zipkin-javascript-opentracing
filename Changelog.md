@@ -1,5 +1,9 @@
 # Changelog
 
+## NEXT
+
+* Fix sampler option. [#87](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/pull/87)
+
 ## 2.0.0
 
 * [Change carrier formats to be openzipkin ones](https://github.com/DanielMSchmidt/zipkin-javascript-opentracing/pull/72)
