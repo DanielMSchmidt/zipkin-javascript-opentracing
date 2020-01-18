@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "babel-polyfill": "6.26.0",
-    "cypress": "2.1.0",
+    "cypress": "3.8.2",
     "node-fetch": "2.1.2",
     "serve": "6.5.5"
   }
