@@ -269,6 +269,29 @@ describe("Opentracing interface", () => {
         expect(zipkinTracer.recordBinary).toHaveBeenCalledWith("data", "42");
       });
 
+      it("should log all data in string format", () => {
+        const data = { user: "johndoe" };
+        const id = 345;
+        span.log({ event: "data_received", data, id });
+
+        // should do it in a scope
+        expect(zipkinTracer.scoped).toHaveBeenCalled();
+        zipkinTracer.scoped.mock.calls[0][0]();
+
+        expect(zipkinTracer.recordBinary).toHaveBeenCalledWith(
+          "event",
+          "data_received"
+        );
+        expect(zipkinTracer.recordBinary).toHaveBeenCalledWith(
+          "data",
+          JSON.stringify(data)
+        );
+        expect(zipkinTracer.recordBinary).toHaveBeenCalledWith(
+          "id",
+          JSON.stringify(id)
+        );
+      });
+
       it("should use the right id in log", () => {
         const otherSpan = tracer.startSpan("Other Span", {
           kind: "client"

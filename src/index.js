@@ -131,7 +131,10 @@ function SpanCreator({ tracer, serviceName, kind }) {
         tracer.setId(this.id);
 
         Object.entries(obj).map(([key, value]) => {
-          tracer.recordBinary(key, value);
+          tracer.recordBinary(
+            key,
+            typeof value !== "string" ? JSON.stringify(value) : value
+          );
         });
       });
     }
@@ -305,6 +308,7 @@ class Tracing {
     return span;
   }
 }
+
 
 // These values should match https://github.com/opentracing/opentracing-javascript/blob/master/src/constants.ts
 Tracing.FORMAT_TEXT_MAP = FORMAT_TEXT_MAP;
