@@ -249,6 +249,12 @@ describe("Opentracing interface", () => {
         expect(span.id.sampled).toBeDefined();
       });
 
+      it("should expose its context", () => {
+        const spanContext = span.context();
+        expect(spanContext.toSpanId()).toBe(span.id.spanId);
+        expect(spanContext.toTraceId()).toBe(span.id.traceId);
+      });
+
       it("should log data", () => {
         span.log({ event: "data_received", data: "42" });
 

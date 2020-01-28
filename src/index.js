@@ -172,6 +172,18 @@ function SpanCreator({ tracer, serviceName, kind }) {
       });
     }
 
+    context() {
+      const { spanId, traceId } = this.id;
+      return {
+        toSpanId() {
+          return spanId;
+        },
+        toTraceId() {
+          return traceId;
+        }
+      };
+    }
+
     finish() {
       tracer.scoped(() => {
         // make sure correct id is set
