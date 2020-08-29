@@ -100,6 +100,7 @@ module.exports = {
       };
     }),
     recordAnnotation: jest.fn(),
+    recordMessage: jest.fn(),
     recordBinary: jest.fn(),
     recordServiceName: jest.fn(),
     scoped: jest.fn(cb => process.nextTick(cb)),
