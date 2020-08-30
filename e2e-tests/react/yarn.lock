@@ -4716,7 +4716,7 @@ node-fetch@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
 
-node-fetch@^1.0.1, node-fetch@^1.5.3:
+node-fetch@^1.0.1:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.3.tgz#980f6f72d85211a5347c6b2bc18c5b84c3eb47ef"
   dependencies:
@@ -7385,13 +7385,14 @@ yauzl@2.4.1:
     fd-slicer "~1.0.1"
 
 "zipkin-javascript-opentracing@file:../..":
-  version "2.0.1"
+  version "2.1.0"
 
-zipkin-transport-http@0.10.1:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.10.1.tgz#615e2bbb3150b3ec0885caf98f6ad013a62ae5bb"
+zipkin-transport-http@0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/zipkin-transport-http/-/zipkin-transport-http-0.22.0.tgz#199567950efd5db4dc4cbd4de580597626232884"
+  integrity sha512-bjM2fm/hurseBuvpyB8mYCBBGOz3gc2f9KUSQl71LGxmgYcUeXvDHJyE9MgzWMhl+3HcD8l5nNn6OmdX63he+g==
   dependencies:
-    node-fetch "^1.5.3"
+    zipkin "^0.22.0"
 
 zipkin@0.10.1:
   version "0.10.1"
@@ -7399,3 +7400,11 @@ zipkin@0.10.1:
   dependencies:
     base64-js "^1.1.2"
     network-address "^1.1.0"
+
+zipkin@^0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/zipkin/-/zipkin-0.22.0.tgz#b8a086f801f809d5ef193c84bd8c6d77efc27831"
+  integrity sha512-SZgorBAvywnj5R26mqsFP+2MRUsBXGg0B8GLRLw9R0FeE4alMUAfhXYvzeAt2+MvkXne9QdQyziuqO5oXNQ0Sg==
+  dependencies:
+    base64-js "^1.1.2"
+    is-promise "^2.1.0"
