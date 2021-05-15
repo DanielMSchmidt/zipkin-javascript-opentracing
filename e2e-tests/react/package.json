@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "opentracing": "0.14.3",
-    "react": "16.3.1",
-    "react-dom": "16.3.1",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "react-scripts": "1.1.4",
     "zipkin": "0.10.1",
     "zipkin-javascript-opentracing": "file:../..",
