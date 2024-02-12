@@ -4712,9 +4712,12 @@ no-case@^2.2.0:
   dependencies:
     lower-case "^1.1.1"
 
-node-fetch@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
+node-fetch@2.6.7:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
+  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
+  dependencies:
+    whatwg-url "^5.0.0"
 
 node-fetch@^1.0.1, node-fetch@^1.5.3:
   version "1.7.3"
@@ -7180,6 +7183,14 @@ whatwg-url@^4.3.0:
     tr46 "~0.0.3"
     webidl-conversions "^3.0.0"
 
+whatwg-url@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/whatwg-url/-/whatwg-url-5.0.0.tgz#966454e8765462e37644d3626f6742ce8b70965d"
+  integrity sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==
+  dependencies:
+    tr46 "~0.0.3"
+    webidl-conversions "^3.0.0"
+
 whet.extend@~0.9.9:
   version "0.9.9"
   resolved "https://registry.yarnpkg.com/whet.extend/-/whet.extend-0.9.9.tgz#f877d5bf648c97e5aa542fadc16d6a259b9c11a1"
@@ -7385,7 +7396,7 @@ yauzl@2.4.1:
     fd-slicer "~1.0.1"
 
 "zipkin-javascript-opentracing@file:../..":
-  version "2.0.1"
+  version "3.0.0"
 
 zipkin-transport-http@0.10.1:
   version "0.10.1"
